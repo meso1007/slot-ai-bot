@@ -53,7 +53,13 @@ async function handleEvent(event: LineEvent, env: Env): Promise<void> {
   } else if (event.type === 'follow') {
     await reply(
       replyToken,
-      [await machineSelectMessage(userId, 0, env)],
+      [
+        {
+          type: 'text',
+          text: 'ようこそ、SLOT COMPASS へ。\n台の横で、3秒で判断。\nまず機種を選んでください。',
+        },
+        await machineSelectMessage(userId, 0, env),
+      ],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
   }

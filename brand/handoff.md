@@ -24,6 +24,8 @@ Method: `logo-design` skill (0x-wzw/logo-design) — research → 8 studies → 
 - `brand/qa/favicon-ladder.svg` — 16→96px ladder
 - `brand/qa/contrast.md` — contrast numbers
 - `brand/out/` — rendered PNGs + studies sheet + blur test
+- `brand/account-settings.md` — LINEアカウント設定文案・チェックリスト
+- `assets/cover.png` — LINEカバー画像（1080×878）
 
 ## Account usage
 - LINE profile image: `assets/icon.png` (640×640, transparent PNG, blue lines only, no fill; generated from `suite/avatar.svg`).

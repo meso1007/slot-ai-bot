@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="878" viewBox="0 0 1080 878">
+<rect width="1080" height="878" fill="#F8FAFC"/>
+<g transform="translate(650,210) scale(0.59375)"><path d="M 472.03 472.03 A 215 215 0 1 1 472.03 167.97" fill="none" stroke="#1D4ED8" stroke-width="26" stroke-linecap="round"/><path d="M 210 455 C 390 455 390 345 320 330 C 250 315 250 205 445 205" fill="none" stroke="#1D4ED8" stroke-width="26" stroke-linecap="round"/><path d="M 445 205 L 418 194 M 445 205 L 418 216" fill="none" stroke="#1D4ED8" stroke-width="26" stroke-linecap="round"/><circle cx="210" cy="455" r="10" fill="#1D4ED8"/></g>
+<text x="80" y="390" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="62" font-weight="700" letter-spacing="7" fill="#0B1220">SLOT COMPASS</text>
+<text x="84" y="445" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" letter-spacing="2" fill="#64748B">立ち回りの羅針盤</text>
+<text x="84" y="492" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" fill="#94A3B8">台の横で、3秒で判断。</text>
+<rect x="84" y="520" width="96" height="3" fill="#1D4ED8"/>
+</svg>
