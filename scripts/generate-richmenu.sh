@@ -8,10 +8,11 @@ mkdir -p assets tmp_richmenu
 
 make_cell() {
   local text="$1" out="$2"
-  magick -size 780x783 "xc:#FFFFFF" \
-    -fill '#1D4ED8' -draw "rectangle 0,0 780,12" \
-    -font "$FONT" -fill '#0A0A0A' -pointsize 144 -gravity center \
-      -annotate +0+0 "$text" "$out"
+  magick -size 780x783 "gradient:#0E2A5E-#1D4ED8" \
+    -font "$FONT" -fill '#FFFFFF' -pointsize 144 -gravity center \
+      -annotate +0+0 "$text" \
+    -fill '#93C5FD' -draw "rectangle 0,0 780,5" \
+    "$out"
 }
 
 make_cell "機種選択" tmp_richmenu/1.png
@@ -23,7 +24,7 @@ make_cell "終了後"   tmp_richmenu/6.png
 
 magick montage tmp_richmenu/1.png tmp_richmenu/2.png tmp_richmenu/3.png \
   tmp_richmenu/4.png tmp_richmenu/5.png tmp_richmenu/6.png \
-  -tile 3x2 -geometry 780x783+30+30 -background '#F8FAFC' tmp_richmenu/montage.png
+  -tile 3x2 -geometry 780x783+30+30 -background '#0B1220' tmp_richmenu/montage.png
 
 magick tmp_richmenu/montage.png -resize 2500x1686! -depth 8 "$OUT"
 
