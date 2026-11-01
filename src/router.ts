@@ -12,7 +12,8 @@ const BUTTON_MAP: Record<string, SectionKey> = {
 };
 
 const KEYWORD_MAP: { re: RegExp; section: SectionKey }[] = [
-  { re: /(特徴|どんな台|概要|この台の|評価)/, section: 'SUMMARY' },
+  { re: /(特徴|どんな台|概要|この台の)/, section: 'SUMMARY' },
+  { re: /(評価|評判|口コミ|レビュー|感想)/, section: 'REVIEW' },
   { re: /(似てる|似ている|類似|近い台|他の台|おすすめ機種)/, section: 'SIMILAR' },
   { re: /(純増|コイン持ち|出玉率|機械割|初当り|初当たり|確率|天井|リセット|スルー)/, section: 'SPEC' },
   { re: /(通常時|前兆|モード|周期|ゾーン|狙い目)/, section: 'NORMAL' },
@@ -33,6 +34,7 @@ export function routeText(text: string): RouteResult {
 
 export const SECTION_LABEL: Record<SectionKey, string> = {
   SUMMARY: '特徴',
+  REVIEW: '評価',
   SIMILAR: '類似機種',
   SPEC: 'スペック',
   NORMAL: '通常時',
