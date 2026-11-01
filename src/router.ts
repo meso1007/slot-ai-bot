@@ -29,6 +29,14 @@ export function routeText(text: string): RouteResult {
   return { kind: 'ai' };
 }
 
+export const SECTION_LABEL: Record<SectionKey, string> = {
+  SPEC: 'スペック',
+  NORMAL: '通常時',
+  AT_CZ: 'AT解説',
+  AT_AFTER: 'AT後',
+  EXIT_SETTING: 'ヤメ時',
+};
+
 export const ACTION_SECTION: Record<string, SectionKey> = {
   spec: 'SPEC',
   normal: 'NORMAL',

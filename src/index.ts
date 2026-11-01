@@ -1,6 +1,6 @@
 import { MACHINES } from './data';
 import { getMachineName, getSection } from './machineLoader';
-import { ACTION_SECTION, routeText } from './router';
+import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
 import { reply, showLoading, verifySignature } from './line';
 import type { LineEvent } from './line';
@@ -76,7 +76,7 @@ async function handleText(
         [
           {
             type: 'text',
-            text: `${name || id} を選択しました。\n「スペック」「狙い目」「AT解説」「ヤメ時」または自由に質問してください。`,
+            text: `${name || id} を選択しました。\n「スペック」「通常時」「AT解説」「AT後」「ヤメ時」または自由に質問してください。`,
           },
         ],
         env.LINE_CHANNEL_ACCESS_TOKEN,
@@ -103,7 +103,7 @@ async function handleText(
     const body = getSection(md, route.section);
     await reply(
       replyToken,
-      [{ type: 'text', text: `【${name}｜${route.section}】\n${body || '記載がありません。'}` }],
+      [{ type: 'text', text: `【${name}｜${SECTION_LABEL[route.section]}】\n${body || '記載がありません。'}` }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
     return;
@@ -176,7 +176,7 @@ async function handlePostback(
     const body = getSection(md, section);
     await reply(
       replyToken,
-      [{ type: 'text', text: `【${name}｜${section}】\n${body || '記載がありません。'}` }],
+      [{ type: 'text', text: `【${name}｜${SECTION_LABEL[section]}】\n${body || '記載がありません。'}` }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
     return;
@@ -193,7 +193,7 @@ const HELP_TEXT = [
   '【使い方】',
   '下のメニューから操作できます。',
   '・機種選択: 機種を切り替え',
-  '・スペック / 狙い目 / AT解説 / ヤメ時: 定型情報を表示',
+  '・スペック / 通常時 / AT解説 / AT後 / ヤメ時: 定型情報を表示',
   '・自由質問: そのままメッセージを送信',
   '例:「380Gから打てる？」',
 ].join('\n');
