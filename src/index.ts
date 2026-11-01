@@ -113,10 +113,31 @@ async function handleText(
 
   const md = MACHINES[machineId];
   const name = getMachineName(md);
+
+  if (t === 'もっと' || t === '詳細' || t === '全文' || t === '全部') {
+    const last = await env.MACHINE_STATE.get(`last:${userId}`);
+    if (last && isSectionKey(last)) {
+      const message = renderSectionMessage(md, name, last, false);
+      await reply(
+        replyToken,
+        [message ?? { type: 'text', text: '表示できる項目がありません。' }],
+        env.LINE_CHANNEL_ACCESS_TOKEN,
+      );
+    } else {
+      await reply(
+        replyToken,
+        [{ type: 'text', text: '先に「スペック」「通常時」などの項目を開いてください。' }],
+        env.LINE_CHANNEL_ACCESS_TOKEN,
+      );
+    }
+    return;
+  }
+
   const route = routeText(t);
 
   if (route.kind === 'section') {
     const label = SECTION_LABEL[route.section];
+    await env.MACHINE_STATE.put(`last:${userId}`, route.section);
     const message = renderSectionMessage(md, name, route.section);
     await reply(
       replyToken,
@@ -188,6 +209,7 @@ async function handlePostback(
 
   if (section) {
     const label = SECTION_LABEL[section];
+    await env.MACHINE_STATE.put(`last:${userId}`, section);
     const message = renderSectionMessage(md, name, section);
     await reply(
       replyToken,
@@ -206,6 +228,7 @@ const HELP_TEXT = [
   '・機種選択: ボタン or 機種名の入力で切り替え',
   '・評価 / 特徴 / 類似機種: 評判・概要・近い台を表示',
   '・スペック / 狙い目 / AT / 終了後: 定型情報を表示',
+  '・「もっと」: 表示中の項目の全文を表示',
   '・自由質問: そのままメッセージを送信',
   '例:「380Gから打てる？」',
 ].join('\n');
@@ -260,20 +283,67 @@ function pickDetailLink(links: { label: string; uri: string }[]) {
   return link ? { label: '設定示唆・フローを詳しく見る', uri: link.uri } : undefined;
 }
 
+const COMPACT_PRIORITY: Partial<Record<SectionKey, string[]>> = {
+  SPEC: ['純増', '出玉率', '初当り', '天井', 'リセット'],
+  NORMAL: ['当選契機', '内部モード', '狙い目'],
+  AT_CZ: ['メインAT', '上位AT', 'チャンスゾーン'],
+  AT_AFTER: ['AT終了後の挙動', '引き戻し', 'AT後1G目'],
+  EXIT_SETTING: ['最適ヤメ時', '設定判別（終了画面）', '設定判別（トロフィー）'],
+  AFTER_EXIT: ['AT終了後の挙動', '引き戻し', '最適ヤメ時', '設定判別（終了画面）'],
+};
+
+const COMPACT_SECTIONS = new Set<SectionKey>([
+  'SPEC',
+  'NORMAL',
+  'AT_CZ',
+  'AT_AFTER',
+  'EXIT_SETTING',
+  'AFTER_EXIT',
+]);
+
+const SECTION_KEYS = new Set<string>([
+  'SUMMARY',
+  'REVIEW',
+  'SIMILAR',
+  'SPEC',
+  'NORMAL',
+  'AT_CZ',
+  'AT_AFTER',
+  'EXIT_SETTING',
+  'AFTER_EXIT',
+  'LINKS',
+  'SOURCES',
+]);
+
+function isSectionKey(value: string): value is SectionKey {
+  return SECTION_KEYS.has(value);
+}
+
 function renderSectionMessage(
   md: string,
   name: string,
   section: SectionKey,
+  compact = true,
 ): LineMessage | null {
   if (section === 'LINKS') {
     return linksFlexMessage(name, getLinks(md));
   }
   const detail = pickDetailLink(getLinks(md));
+  const useCompact = compact && COMPACT_SECTIONS.has(section);
   if (section === 'AFTER_EXIT') {
     const body = [getSection(md, 'AT_AFTER'), getSection(md, 'EXIT_SETTING')]
       .filter(Boolean)
       .join('\n');
-    return body ? sectionFlexMessage(name, SECTION_LABEL[section], body, detail) : null;
+    return body
+      ? sectionFlexMessage(
+          name,
+          SECTION_LABEL[section],
+          body,
+          detail,
+          useCompact,
+          COMPACT_PRIORITY.AFTER_EXIT,
+        )
+      : null;
   }
   if (section === 'REVIEW') {
     const review = getSection(md, 'REVIEW');
@@ -281,7 +351,16 @@ function renderSectionMessage(
     return review ? reviewFlexMessage(name, summary, review, detail) : null;
   }
   const body = getSection(md, section);
-  return body ? sectionFlexMessage(name, SECTION_LABEL[section], body, detail) : null;
+  return body
+    ? sectionFlexMessage(
+        name,
+        SECTION_LABEL[section],
+        body,
+        detail,
+        useCompact,
+        COMPACT_PRIORITY[section] ?? [],
+      )
+    : null;
 }
 
 async function selectMachine(

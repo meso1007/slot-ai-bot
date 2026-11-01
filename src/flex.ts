@@ -286,8 +286,20 @@ export function sectionFlexMessage(
   label: string,
   body: string,
   link?: { label: string; uri: string },
+  compact = false,
+  priority: string[] = [],
 ): LineMessage {
-  const items = parseSectionItems(body);
+  const allItems = parseSectionItems(body);
+  let items = allItems;
+  if (compact) {
+    const picked: SectionItem[] = [];
+    for (const key of priority) {
+      const hit = allItems.find((i) => i.label.includes(key) && !picked.includes(i));
+      if (hit) picked.push(hit);
+    }
+    if (picked.length === 0) picked.push(...allItems.slice(0, 4));
+    items = picked.slice(0, 5);
+  }
   const contents: unknown[] = [];
 
   if (items.length > 0) {
@@ -364,7 +376,10 @@ export function sectionFlexMessage(
         spacing: 'none',
         contents,
       },
-      footer: footer('下のメニューから他の項目も見られます', link),
+      footer: footer(
+        compact ? '「もっと」で全文／下のメニューで他の項目' : '下のメニューから他の項目も見られます',
+        link,
+      ),
     },
   };
 }
