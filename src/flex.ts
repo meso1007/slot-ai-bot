@@ -123,7 +123,7 @@ function header(label: string, title: string, meta?: string, subtitle?: string) 
     {
       type: 'text',
       text: title,
-      size: 'xxl',
+      size: 'xl',
       color: C.ink,
       weight: 'bold',
       wrap: true,
@@ -150,10 +150,10 @@ function header(label: string, title: string, meta?: string, subtitle?: string) 
       {
         type: 'box',
         layout: 'vertical',
-        paddingTop: '18px',
-        paddingBottom: '16px',
-        paddingStart: '20px',
-        paddingEnd: '20px',
+        paddingTop: '12px',
+        paddingBottom: '10px',
+        paddingStart: '14px',
+        paddingEnd: '14px',
         contents: inner,
       },
     ],
@@ -248,14 +248,14 @@ export function aiFlexMessage(name: string, answer: string): LineMessage {
         type: 'box',
         layout: 'vertical',
         backgroundColor: C.surface,
-        paddingAll: '20px',
+        paddingAll: '16px',
         contents: [
           {
             type: 'box',
             layout: 'vertical',
             backgroundColor: C.accentSoft,
             cornerRadius: 'lg',
-            paddingAll: '16px',
+            paddingAll: '12px',
             contents: [
               {
                 type: 'text',
@@ -307,7 +307,7 @@ export function sectionFlexMessage(
       contents.push({
         type: 'box',
         layout: 'horizontal',
-        margin: i === 0 ? 'none' : 'lg',
+        margin: i === 0 ? 'none' : 'sm',
         spacing: 'md',
         contents: [
           {
@@ -345,7 +345,7 @@ export function sectionFlexMessage(
         ],
       });
       if (i < items.length - 1) {
-        contents.push({ type: 'separator', margin: 'lg', color: C.hairline });
+        contents.push({ type: 'separator', margin: 'sm', color: C.hairline });
       }
     });
   } else {
@@ -369,10 +369,10 @@ export function sectionFlexMessage(
         type: 'box',
         layout: 'vertical',
         backgroundColor: C.surface,
-        paddingTop: '18px',
-        paddingBottom: '20px',
-        paddingStart: '20px',
-        paddingEnd: '20px',
+        paddingTop: '10px',
+        paddingBottom: '12px',
+        paddingStart: '14px',
+        paddingEnd: '14px',
         spacing: 'none',
         contents,
       },
@@ -418,7 +418,7 @@ export function reviewFlexMessage(
         },
       ],
     });
-    contents.push({ type: 'separator', margin: 'lg', color: C.hairline });
+    contents.push({ type: 'separator', margin: 'sm', color: C.hairline });
   }
 
   if (parsed.score !== null) {
@@ -427,8 +427,8 @@ export function reviewFlexMessage(
       layout: 'vertical',
       backgroundColor: C.accentSoft,
       cornerRadius: 'lg',
-      paddingAll: '16px',
-      margin: gameplay ? 'lg' : 'none',
+      paddingAll: '12px',
+      margin: gameplay ? 'md' : 'none',
       contents: [
         { type: 'text', text: '総合評価', size: 'xs', color: C.accentInk, weight: 'bold' },
         {
@@ -439,7 +439,7 @@ export function reviewFlexMessage(
             {
               type: 'text',
               text: parsed.score.toFixed(1),
-              size: '5xl',
+              size: '4xl',
               color: C.accentInk,
               weight: 'bold',
               flex: 0,
@@ -474,7 +474,7 @@ export function reviewFlexMessage(
     contents.push({
       type: 'box',
       layout: 'vertical',
-      margin: gameplay ? 'lg' : 'none',
+      margin: gameplay ? 'md' : 'none',
       contents: [
         { type: 'text', text: '総合評価', size: 'xs', color: C.muted, weight: 'bold' },
         {
@@ -492,7 +492,7 @@ export function reviewFlexMessage(
     contents.push({
       type: 'box',
       layout: 'vertical',
-      margin: 'lg',
+      margin: 'md',
       spacing: 'xs',
       contents: [
         { type: 'text', text: '他サイト評価', size: 'xs', color: C.muted, weight: 'bold' },
@@ -516,7 +516,7 @@ export function reviewFlexMessage(
     contents.push({
       type: 'box',
       layout: 'vertical',
-      margin: 'xl',
+      margin: 'lg',
       spacing: 'xs',
       contents: [
         {
@@ -551,7 +551,7 @@ export function reviewFlexMessage(
   );
   const rest = items.filter((i) => !known.has(i));
   if (rest.length) {
-    contents.push({ type: 'separator', margin: 'lg', color: C.hairline });
+    contents.push({ type: 'separator', margin: 'sm', color: C.hairline });
     rest.forEach((item, i) => {
       contents.push({
         type: 'box',
@@ -583,10 +583,10 @@ export function reviewFlexMessage(
         type: 'box',
         layout: 'vertical',
         backgroundColor: C.surface,
-        paddingTop: '18px',
-        paddingBottom: '20px',
-        paddingStart: '20px',
-        paddingEnd: '20px',
+        paddingTop: '10px',
+        paddingBottom: '12px',
+        paddingStart: '14px',
+        paddingEnd: '14px',
         spacing: 'none',
         contents,
       },
@@ -623,8 +623,8 @@ export function linksFlexMessage(
     contents.push({
       type: 'box',
       layout: 'horizontal',
-      paddingTop: '14px',
-      paddingBottom: '14px',
+      paddingTop: '10px',
+      paddingBottom: '10px',
       spacing: 'sm',
       action: { type: 'uri', uri: link.uri },
       contents: [
@@ -663,10 +663,10 @@ export function linksFlexMessage(
         type: 'box',
         layout: 'vertical',
         backgroundColor: C.surface,
-        paddingTop: '18px',
-        paddingBottom: '20px',
-        paddingStart: '20px',
-        paddingEnd: '20px',
+        paddingTop: '10px',
+        paddingBottom: '12px',
+        paddingStart: '14px',
+        paddingEnd: '14px',
         spacing: 'none',
         contents,
       },
@@ -731,7 +731,7 @@ export function machinePickerFlexMessage(params: {
       paddingAll: '12px',
       contents: introContents,
     });
-    contents.push({ type: 'separator', margin: 'lg', color: C.hairline });
+    contents.push({ type: 'separator', margin: 'sm', color: C.hairline });
   }
 
   items.forEach((item, i) => {
@@ -743,7 +743,7 @@ export function machinePickerFlexMessage(params: {
         size: 'xs',
         color: C.accentInk,
         weight: 'bold',
-        margin: contents.length ? 'lg' : 'none',
+        margin: contents.length ? 'md' : 'none',
       });
       recentHeader = true;
     }
@@ -754,15 +754,15 @@ export function machinePickerFlexMessage(params: {
         size: 'xs',
         color: C.accentInk,
         weight: 'bold',
-        margin: contents.length ? 'lg' : 'none',
+        margin: contents.length ? 'md' : 'none',
       });
       otherHeader = true;
     }
     contents.push({
       type: 'box',
       layout: 'horizontal',
-      paddingTop: '14px',
-      paddingBottom: '14px',
+      paddingTop: '10px',
+      paddingBottom: '10px',
       spacing: 'sm',
       action: {
         type: 'message',

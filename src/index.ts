@@ -228,7 +228,6 @@ const HELP_TEXT = [
   '・機種選択: ボタン or 機種名の入力で切り替え',
   '・評価 / 特徴 / 類似機種: 評判・概要・近い台を表示',
   '・スペック / 狙い目 / AT / 終了後: 定型情報を表示',
-  '・「もっと」: 表示中の項目の全文を表示',
   '・自由質問: そのままメッセージを送信',
   '例:「380Gから打てる？」',
 ].join('\n');
@@ -323,7 +322,7 @@ function renderSectionMessage(
   md: string,
   name: string,
   section: SectionKey,
-  compact = true,
+  compact = false,
 ): LineMessage | null {
   if (section === 'LINKS') {
     return linksFlexMessage(name, getLinks(md));
