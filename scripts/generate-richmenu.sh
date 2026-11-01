@@ -9,7 +9,7 @@ mkdir -p assets tmp_richmenu
 make_cell() {
   local text="$1" out="$2"
   magick -size 780x783 "xc:#FFFFFF" \
-    -fill '#D92D20' -draw "rectangle 0,0 780,12" \
+    -fill '#1D4ED8' -draw "rectangle 0,0 780,12" \
     -font "$FONT" -fill '#0A0A0A' -pointsize 144 -gravity center \
       -annotate +0+0 "$text" "$out"
 }
@@ -23,7 +23,7 @@ make_cell "終了後"   tmp_richmenu/6.png
 
 magick montage tmp_richmenu/1.png tmp_richmenu/2.png tmp_richmenu/3.png \
   tmp_richmenu/4.png tmp_richmenu/5.png tmp_richmenu/6.png \
-  -tile 3x2 -geometry 780x783+30+30 -background '#FFFBF9' tmp_richmenu/montage.png
+  -tile 3x2 -geometry 780x783+30+30 -background '#F8FAFC' tmp_richmenu/montage.png
 
 magick tmp_richmenu/montage.png -resize 2500x1686! -depth 8 "$OUT"
 

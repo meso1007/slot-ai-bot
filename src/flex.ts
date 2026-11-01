@@ -6,20 +6,20 @@ interface SectionItem {
 }
 
 const C = {
-  ink: '#0A0A0A',
-  body: '#3F3F46',
-  muted: '#78716C',
-  faint: '#A8A29E',
-  line: '#E7E5E4',
-  hairline: '#F5F5F4',
+  ink: '#0B1220',
+  body: '#334155',
+  muted: '#64748B',
+  faint: '#94A3B8',
+  line: '#E2E8F0',
+  hairline: '#F1F5F9',
   surface: '#FFFFFF',
-  canvas: '#FFFBF9',
-  band: '#FFF4F1',
-  accent: '#D92D20',
-  accentInk: '#B42318',
-  accentSoft: '#FFF1F0',
-  accentLine: '#FECACA',
-  accentFaint: '#FCA5A5',
+  canvas: '#FAFCFF',
+  band: '#F4F8FF',
+  accent: '#1D4ED8',
+  accentInk: '#1E40AF',
+  accentSoft: '#EFF4FF',
+  accentLine: '#BFDBFE',
+  accentFaint: '#93C5FD',
 };
 
 const SECTION_INDEX: Record<string, string> = {
