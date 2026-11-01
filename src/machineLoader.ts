@@ -1,5 +1,6 @@
 export type SectionKey =
   | 'SUMMARY'
+  | 'SIMILAR'
   | 'SPEC'
   | 'NORMAL'
   | 'AT_CZ'
