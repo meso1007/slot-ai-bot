@@ -199,3 +199,142 @@ export function sectionFlexMessage(name: string, label: string, body: string): L
     },
   };
 }
+
+export function machinePickerFlexMessage(params: {
+  page: number;
+  totalPages: number;
+  total: number;
+  items: { id: string; name: string }[];
+}): LineMessage {
+  const { page, totalPages, total, items } = params;
+  const bodyContents: unknown[] = [
+    {
+      type: 'text',
+      text: '上から最近使った順・人気順',
+      size: 'xs',
+      color: '#64748B',
+      margin: 'none',
+    },
+  ];
+  for (const item of items) {
+    bodyContents.push({
+      type: 'box',
+      layout: 'horizontal',
+      backgroundColor: '#F8FAFC',
+      cornerRadius: '10px',
+      paddingAll: '12px',
+      margin: 'sm',
+      spacing: 'sm',
+      action: {
+        type: 'message',
+        label: item.name.slice(0, 40),
+        text: item.name,
+      },
+      contents: [
+        {
+          type: 'text',
+          text: item.name,
+          size: 'sm',
+          color: '#0F172A',
+          wrap: true,
+          flex: 1,
+          gravity: 'center',
+        },
+        {
+          type: 'text',
+          text: '›',
+          size: 'lg',
+          color: '#94A3B8',
+          gravity: 'center',
+          flex: 0,
+        },
+      ],
+    });
+  }
+
+  const footerContents: unknown[] = [];
+  if (page > 0) {
+    footerContents.push({
+      type: 'button',
+      style: 'link',
+      height: 'sm',
+      flex: 1,
+      action: {
+        type: 'message',
+        label: '前へ',
+        text: '前へ',
+      },
+    });
+  }
+  if (page < totalPages - 1) {
+    footerContents.push({
+      type: 'button',
+      style: 'link',
+      height: 'sm',
+      flex: 1,
+      action: {
+        type: 'message',
+        label: '次の機種へ',
+        text: '次の機種へ',
+      },
+    });
+  }
+  if (!footerContents.length) {
+    footerContents.push({
+      type: 'text',
+      text: '機種名を直接入力しても選べます',
+      size: 'xs',
+      color: '#64748B',
+      align: 'center',
+      flex: 1,
+    });
+  }
+
+  return {
+    type: 'flex',
+    altText: `機種選択（${page + 1}/${totalPages}）`,
+    contents: {
+      type: 'bubble',
+      size: 'giga',
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#0F172A',
+        paddingAll: '16px',
+        contents: [
+          {
+            type: 'text',
+            text: '機種選択',
+            size: 'lg',
+            color: '#FFFFFF',
+            weight: 'bold',
+          },
+          {
+            type: 'text',
+            text: `全${total}台 ・ ${page + 1}/${totalPages}ページ`,
+            size: 'xs',
+            color: '#CBD5E1',
+            margin: 'xs',
+          },
+        ],
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#FFFFFF',
+        paddingAll: '12px',
+        spacing: 'sm',
+        contents: bodyContents,
+      },
+      footer: {
+        type: 'box',
+        layout: 'horizontal',
+        backgroundColor: '#F8FAFC',
+        paddingAll: '12px',
+        spacing: 'sm',
+        contents: footerContents,
+      },
+    },
+  };
+}
+

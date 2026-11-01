@@ -2,7 +2,7 @@ import { MACHINES, MACHINE_ALIASES, MACHINE_ORDER } from './data';
 import { getMachineName, getSection } from './machineLoader';
 import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
-import { aiFlexMessage, sectionFlexMessage } from './flex';
+import { aiFlexMessage, machinePickerFlexMessage, sectionFlexMessage } from './flex';
 import { formatForLine, reply, showLoading, verifySignature } from './line';
 import { matchIds } from './search';
 import type { LineEvent } from './line';
@@ -66,6 +66,13 @@ async function handleText(
   env: Env,
 ): Promise<void> {
   const t = text.trim();
+
+  if (t === '次の機種へ' || t === '前へ') {
+    const cur = Number((await env.MACHINE_STATE.get(`page:${userId}`)) ?? '0') || 0;
+    const next = t === '次の機種へ' ? cur + 1 : cur - 1;
+    await reply(replyToken, [await machineSelectMessage(userId, next, env)], env.LINE_CHANNEL_ACCESS_TOKEN);
+    return;
+  }
 
   if (MACHINES[t]) {
     await selectMachine(userId, t, replyToken, env);
@@ -141,8 +148,8 @@ async function handlePostback(
     await rememberMachine(userId, machineId, env);
   }
 
-  // 機種選択ボタン（機種未指定）→ 機種一覧をクイックリプライで提示
-  if (action === 'select' && !machineId) {
+  // 機種選択（ページ送り含む）
+  if (!machineId && (action === 'select' || params.has('page'))) {
     await reply(replyToken, [await machineSelectMessage(userId, page, env)], env.LINE_CHANNEL_ACCESS_TOKEN);
     return;
   }
@@ -224,15 +231,14 @@ async function selectMachine(
 }
 
 function candidateMessage(ids: string[]) {
-  const items: QuickReplyItem[] = ids.slice(0, 13).map((id) => {
+  const items = ids.slice(0, 13).map((id) => {
     const name = getMachineName(MACHINES[id]) || id;
     return {
-      type: 'action',
+      type: 'action' as const,
       action: {
-        type: 'postback',
+        type: 'message' as const,
         label: name.slice(0, 20),
-        data: `machine=${id}&action=select`,
-        displayText: name,
+        text: name,
       },
     };
   });
@@ -245,11 +251,6 @@ function candidateMessage(ids: string[]) {
 }
 
 const PAGE_SIZE = 11;
-
-type QuickReplyItem = {
-  type: 'action';
-  action: { type: 'postback'; label: string; data: string; displayText: string };
-};
 
 async function getRecent(userId: string, env: Env): Promise<string[]> {
   const raw = await env.MACHINE_STATE.get(`recent:${userId}`);
@@ -287,38 +288,10 @@ async function machineSelectMessage(userId: string, page: number, env: Env) {
   const ids = orderedMachineIds(await getRecent(userId, env));
   const totalPages = Math.max(1, Math.ceil(ids.length / PAGE_SIZE));
   const p = Math.min(Math.max(0, page), totalPages - 1);
-  const items: QuickReplyItem[] = ids
-    .slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE)
-    .map((id) => {
-      const name = getMachineName(MACHINES[id]) || id;
-      return {
-        type: 'action' as const,
-        action: {
-          type: 'postback' as const,
-          label: name.slice(0, 20),
-          data: `machine=${id}&action=select`,
-          displayText: name,
-        },
-      };
-    });
-  if (p > 0) {
-    items.push({
-      type: 'action',
-      action: { type: 'postback', label: '前へ', data: `action=select&page=${p - 1}`, displayText: '前へ' },
-    });
-  }
-  if (p < totalPages - 1) {
-    items.push({
-      type: 'action',
-      action: { type: 'postback', label: '次の機種へ', data: `action=select&page=${p + 1}`, displayText: '次の機種へ' },
-    });
-  }
-  return {
-    type: 'text' as const,
-    text:
-      totalPages > 1
-        ? `機種を選んでください（${p + 1}/${totalPages}）\n機種名を直接入力しても選べます。`
-        : '機種を選んでください。\n機種名を直接入力しても選べます。',
-    quickReply: { items },
-  };
+  await env.MACHINE_STATE.put(`page:${userId}`, String(p));
+  const items = ids.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE).map((id) => ({
+    id,
+    name: getMachineName(MACHINES[id]) || id,
+  }));
+  return machinePickerFlexMessage({ page: p, totalPages, total: ids.length, items });
 }
