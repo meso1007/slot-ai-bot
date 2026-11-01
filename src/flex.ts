@@ -110,7 +110,7 @@ function header(label: string, title: string, meta?: string, subtitle?: string) 
         tag(label),
         {
           type: 'text',
-          text: meta ?? 'SLOT AI',
+          text: meta ?? 'スロットコンパス',
           size: 'xxs',
           color: C.accentInk,
           weight: 'bold',
@@ -187,7 +187,7 @@ function footer(hint: string, link?: { label: string; uri: string }) {
       },
       {
         type: 'text',
-        text: 'SLOT AI',
+        text: 'スロットコンパス',
         size: 'xxs',
         color: C.accentInk,
         weight: 'bold',
