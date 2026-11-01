@@ -6,7 +6,9 @@ export interface LineEvent {
   postback?: { data: string };
 }
 
-export type LineMessage = { type: 'text'; text: string; quickReply?: unknown };
+export type LineMessage =
+  | { type: 'text'; text: string; quickReply?: unknown }
+  | { type: 'flex'; altText: string; contents: unknown; quickReply?: unknown };
 
 export function formatForLine(text: string): string {
   return text

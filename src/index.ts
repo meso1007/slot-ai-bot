@@ -2,6 +2,7 @@ import { MACHINES } from './data';
 import { getMachineName, getSection } from './machineLoader';
 import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
+import { aiFlexMessage, sectionFlexMessage } from './flex';
 import { formatForLine, reply, showLoading, verifySignature } from './line';
 import type { LineEvent } from './line';
 
@@ -101,9 +102,10 @@ async function handleText(
 
   if (route.kind === 'section') {
     const body = getSection(md, route.section);
+    const label = SECTION_LABEL[route.section];
     await reply(
       replyToken,
-      [{ type: 'text', text: formatForLine(`【${name}｜${SECTION_LABEL[route.section]}】\n${body || '記載がありません。'}`) }],
+      [body ? sectionFlexMessage(name, label, body) : { type: 'text', text: `${name}｜${label}\n記載がありません。` }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
     return;
@@ -117,11 +119,10 @@ async function handleText(
       user: t,
       apiKey: env.DEEPSEEK_API_KEY,
     });
-    await reply(
-      replyToken,
-      [{ type: 'text', text: formatForLine(answer || 'うまく回答できませんでした。') }],
-      env.LINE_CHANNEL_ACCESS_TOKEN,
-    );
+    const text = answer || 'うまく回答できませんでした。';
+    const message =
+      text.length <= 1200 ? aiFlexMessage(name, text) : { type: 'text' as const, text: formatForLine(text) };
+    await reply(replyToken, [message], env.LINE_CHANNEL_ACCESS_TOKEN);
   } catch (err) {
     console.error('DeepSeek failed', err);
     await reply(
@@ -174,9 +175,10 @@ async function handlePostback(
 
   if (section) {
     const body = getSection(md, section);
+    const label = SECTION_LABEL[section];
     await reply(
       replyToken,
-      [{ type: 'text', text: formatForLine(`【${name}｜${SECTION_LABEL[section]}】\n${body || '記載がありません。'}`) }],
+      [body ? sectionFlexMessage(name, label, body) : { type: 'text', text: `${name}｜${label}\n記載がありません。` }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
     return;
