@@ -53,24 +53,7 @@ async function handleEvent(event: LineEvent, env: Env): Promise<void> {
   } else if (event.type === 'follow') {
     await reply(
       replyToken,
-      [
-        {
-          type: 'text',
-          text: [
-            'ようこそ、SLOT COMPASS へ。',
-            '台の横で、3秒で判断するためのリファレンスです。',
-            '',
-            '・下のメニューから「機種選択」',
-            '・台を選ぶと、評価と概要を表示',
-            '・「評価 / スペック / 狙い目 / AT / 終了後」をタップ',
-            '・機種名を直接入力してもOK',
-            '・わからないことは、そのまま質問',
-            '',
-            'まずは機種を選んでください。',
-          ].join('\n'),
-        },
-        await machineSelectMessage(userId, 0, env),
-      ],
+      [await machineSelectMessage(userId, 0, env, true)],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
   }
@@ -350,7 +333,7 @@ function orderedMachineIds(recent: string[]): string[] {
   return out;
 }
 
-async function machineSelectMessage(userId: string, page: number, env: Env) {
+async function machineSelectMessage(userId: string, page: number, env: Env, intro = false) {
   const recent = await getRecent(userId, env);
   const ids = orderedMachineIds(recent);
   const totalPages = Math.max(1, Math.ceil(ids.length / PAGE_SIZE));
@@ -360,5 +343,5 @@ async function machineSelectMessage(userId: string, page: number, env: Env) {
     id,
     name: getMachineName(MACHINES[id]) || id,
   }));
-  return machinePickerFlexMessage({ page: p, totalPages, total: ids.length, items, recent });
+  return machinePickerFlexMessage({ page: p, totalPages, total: ids.length, items, recent, intro });
 }

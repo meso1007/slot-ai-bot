@@ -666,12 +666,46 @@ export function machinePickerFlexMessage(params: {
   total: number;
   items: { id: string; name: string }[];
   recent?: string[];
+  intro?: boolean;
 }): LineMessage {
-  const { page, totalPages, total, items } = params;
+  const { page, totalPages, total, items, intro } = params;
   const recentSet = new Set(params.recent ?? []);
   const contents: unknown[] = [];
   let recentHeader = false;
   let otherHeader = false;
+
+  if (intro) {
+    contents.push({
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: C.accentSoft,
+      cornerRadius: 'lg',
+      paddingAll: '12px',
+      contents: [
+        {
+          type: 'text',
+          text: 'SLOT COMPASS の使い方',
+          size: 'xs',
+          color: C.accentInk,
+          weight: 'bold',
+        },
+        {
+          type: 'text',
+          text: [
+            '・下のメニューから機種を選ぶ',
+            '・「評価 / スペック / 狙い目 / AT / 終了後」をタップ',
+            '・機種名を直接入力してもOK',
+            '・わからないことは、そのまま質問',
+          ].join('\n'),
+          size: 'xs',
+          color: C.body,
+          wrap: true,
+          margin: 'sm',
+        },
+      ],
+    });
+    contents.push({ type: 'separator', margin: 'lg', color: C.hairline });
+  }
 
   items.forEach((item, i) => {
     const isRecent = recentSet.has(item.id);
