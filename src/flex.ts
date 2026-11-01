@@ -110,7 +110,7 @@ function header(label: string, title: string, meta?: string, subtitle?: string) 
         tag(label),
         {
           type: 'text',
-          text: meta ?? 'スロットコンパス',
+          text: meta ?? 'SLOT COMPASS',
           size: 'xxs',
           color: C.accentInk,
           weight: 'bold',
@@ -187,7 +187,7 @@ function footer(hint: string, link?: { label: string; uri: string }) {
       },
       {
         type: 'text',
-        text: 'スロットコンパス',
+        text: 'SLOT COMPASS',
         size: 'xxs',
         color: C.accentInk,
         weight: 'bold',
