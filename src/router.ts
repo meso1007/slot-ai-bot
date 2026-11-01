@@ -1,0 +1,34 @@
+import type { SectionKey } from './machineLoader';
+
+export type RouteResult = { kind: 'section'; section: SectionKey } | { kind: 'ai' };
+
+const BUTTON_MAP: Record<string, SectionKey> = {
+  スペック: 'SPEC',
+  狙い目: 'NORMAL',
+  AT解説: 'AT_CZ',
+  ヤメ時: 'EXIT_SETTING',
+};
+
+const KEYWORD_MAP: { re: RegExp; section: SectionKey }[] = [
+  { re: /(純増|コイン持ち|出玉率|機械割|初当り|初当たり|確率|天井|リセット|スルー)/, section: 'SPEC' },
+  { re: /(狙い目|ゾーン|周期|モード)/, section: 'NORMAL' },
+  { re: /(チャンスゾーン|CZ|AT|上乗せ|特化)/i, section: 'AT_CZ' },
+  { re: /(ヤメ時|やめ時|やめどき|終了画面|設定判別)/, section: 'EXIT_SETTING' },
+];
+
+export function routeText(text: string): RouteResult {
+  const t = text.trim();
+  const button = BUTTON_MAP[t];
+  if (button) return { kind: 'section', section: button };
+  for (const { re, section } of KEYWORD_MAP) {
+    if (re.test(t)) return { kind: 'section', section };
+  }
+  return { kind: 'ai' };
+}
+
+export const ACTION_SECTION: Record<string, SectionKey> = {
+  spec: 'SPEC',
+  netaime: 'NORMAL',
+  at: 'AT_CZ',
+  exit: 'EXIT_SETTING',
+};

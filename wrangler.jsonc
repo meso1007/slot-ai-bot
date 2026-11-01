@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "my-slot-bot",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-30",
+  // .md を文字列 (Text module) として import するための設定
+  "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": false }],
+  // ユーザーごとの選択機種を保持（自動プロビジョニング。deploy 時に ID が書き戻される）
+  "kv_namespaces": [{ "binding": "MACHINE_STATE" }],
+  "observability": { "enabled": true }
+}
