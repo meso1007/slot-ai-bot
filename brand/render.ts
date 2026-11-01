@@ -26,6 +26,7 @@ for (const f of readdirSync(join(ROOT, 'qa')).filter((f) => f.endsWith('.svg')))
   render(join(ROOT, 'qa', f), join(OUT, f.replace(/\.svg$/, '.png')));
 }
 
-render(join(ROOT, 'suite', 'symbol-dark.svg'), join(ROOT, '..', 'assets', 'icon.png'));
+render(join(ROOT, 'suite', 'symbol-transparent.svg'), join(ROOT, '..', 'assets', 'icon.png'));
+render(join(ROOT, 'suite', 'symbol-transparent.svg'), join(OUT, 'icon-transparent.png'));
 render(join(ROOT, 'suite', 'symbol-dark.svg'), join(OUT, 'sym240.png'), 240);
 console.log('rendered');

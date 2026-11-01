@@ -35,6 +35,9 @@ const needle2 = (cx: number, cy: number, len: number, w: number, north: string, 
   return `<path d="M ${cx} ${t} L ${cx - w} ${cy} L ${cx + w} ${cy} Z" fill="none" stroke="${north}" stroke-width="${sw}" stroke-linejoin="miter"/><path d="M ${cx} ${b} L ${cx - w} ${cy} L ${cx + w} ${cy} Z" fill="none" stroke="${south}" stroke-width="${sw}" stroke-linejoin="miter"/>`;
 };
 
+const diamond = (cx: number, cy: number, len: number, w: number, color: string, sw: number) =>
+  `<path d="M ${cx} ${cy - len} L ${cx - w} ${cy} L ${cx} ${cy + len} L ${cx + w} ${cy} Z" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linejoin="miter"/>`;
+
 const ticks = (cx: number, cy: number, r1: number, r2: number, sw: number, color: string) => {
   let s = '';
   for (let i = 0; i < 8; i++) {
@@ -111,6 +114,14 @@ write(
 const cs = 800;
 const constructionBody = `<text x="40" y="44" font-family="${FONT}" font-size="18" font-weight="700" fill="${INK}">CONSTRUCTION / APERTURE C</text><text x="40" y="66" font-family="${FONT}" font-size="12" fill="#6B7280">SLOT COMPASS · geometry proof</text><g transform="translate(100,100)">${grid(600, 600)}<circle cx="300" cy="300" r="170" fill="none" stroke="#CBD5E1" stroke-dasharray="4 6"/><line x1="300" y1="300" x2="470" y2="300" stroke="${BLUE}" stroke-width="2" stroke-dasharray="6 4"/><circle cx="300" cy="300" r="4" fill="${BLUE}"/><text x="382" y="292" font-family="${FONT}" font-size="14" fill="${BLUE}">R 170</text><text x="20" y="40" font-family="${FONT}" font-size="14" fill="${BLUE}">NEEDLE 150 × 34</text><text x="470" y="205" font-family="${FONT}" font-size="14" fill="${BLUE}">GAP 64°</text>${symbolColor}</g><text x="40" y="760" font-family="${FONT}" font-size="13" fill="#6B7280">SW 24 · 2% optical overshoot on apertures · one terminal language (round) · 55 / 34 / 21 nest reference</text>`;
 write('suite/construction.svg', doc(cs, cs, constructionBody));
+
+// Transparent, single-blue, no-fill account icon (640)
+const T = { cx: 320, cy: 320, r: 205 };
+const transparentMark = `${cArc(T.cx, T.cy, T.r, 64, BLUE, 30)}${needle(T.cx, T.cy, 168, 42, BLUE, 22)}`;
+write(
+  'suite/symbol-transparent.svg',
+  `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">${transparentMark}</svg>`,
+);
 
 // ---------- QA ----------
 const sizes = [16, 24, 32, 48, 64, 96];

@@ -15,7 +15,8 @@ Method: `logo-design` skill (0x-wzw/logo-design) — research → 8 studies → 
 - `brand/scoreboard.md` — scoring + selection rationale
 - `brand/suite/symbol.svg` — color symbol (paper)
 - `brand/suite/symbol-mono.svg` — single-color ink
-- `brand/suite/symbol-dark.svg` — dark-mode symbol (source of `assets/icon.png`)
+- `brand/suite/symbol-dark.svg` — dark-mode symbol
+- `brand/suite/symbol-transparent.svg` — transparent, single-blue, no-fill account mark (source of `assets/icon.png`)
 - `brand/suite/micro-mark.svg` — 16px-first mark
 - `brand/suite/lockup.svg` — symbol + tracked wordmark
 - `brand/suite/construction.svg` — public construction proof
@@ -24,7 +25,7 @@ Method: `logo-design` skill (0x-wzw/logo-design) — research → 8 studies → 
 - `brand/out/` — rendered PNGs + studies sheet + blur test
 
 ## Account usage
-- LINE profile image: `assets/icon.png` (640×640, 8-bit PNG).
+- LINE profile image: `assets/icon.png` (640×640, transparent PNG, blue lines only, no fill).
 - Account name: `SLOT COMPASS` (or `スロットコンパス`).
 - Card wordmark: `SLOT COMPASS` (already in `src/flex.ts`).
 
