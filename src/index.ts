@@ -65,10 +65,11 @@ async function handleText(
 ): Promise<void> {
   const t = text.trim();
 
-  // 機種ID or 機種名での選択
+  // 機種ID or 機種名での選択（部分一致も許可）
   for (const [id, md] of Object.entries(MACHINES)) {
     const name = getMachineName(md);
-    if (t === id || (name && t.includes(name))) {
+    const byName = name && (t.includes(name) || (t.length >= 2 && name.includes(t)));
+    if (t === id || byName) {
       await env.MACHINE_STATE.put(userId, id);
       await reply(
         replyToken,
