@@ -29,6 +29,7 @@ const SECTION_INDEX: Record<string, string> = {
   AT解説: '04',
   AT後: '05',
   ヤメ時: '06',
+  終了後: '05–06',
   評価: '07',
   類似機種: '08',
 };

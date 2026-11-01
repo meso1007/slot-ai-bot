@@ -7,6 +7,7 @@ export type SectionKey =
   | 'AT_CZ'
   | 'AT_AFTER'
   | 'EXIT_SETTING'
+  | 'AFTER_EXIT'
   | 'LINKS'
   | 'SOURCES';
 

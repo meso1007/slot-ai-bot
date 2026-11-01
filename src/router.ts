@@ -42,14 +42,17 @@ export const SECTION_LABEL: Record<SectionKey, string> = {
   AT_CZ: 'AT解説',
   AT_AFTER: 'AT後',
   EXIT_SETTING: 'ヤメ時',
+  AFTER_EXIT: '終了後',
   LINKS: 'リンク',
   SOURCES: '出典',
 };
 
 export const ACTION_SECTION: Record<string, SectionKey> = {
+  review: 'REVIEW',
   spec: 'SPEC',
   normal: 'NORMAL',
   at: 'AT_CZ',
   after: 'AT_AFTER',
   exit: 'EXIT_SETTING',
+  afterexit: 'AFTER_EXIT',
 };
