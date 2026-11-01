@@ -22,10 +22,10 @@ cat > "$BODY" <<'JSON'
   "areas": [
     { "bounds": { "x": 30, "y": 30, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=select", "displayText": "機種選択" } },
     { "bounds": { "x": 850, "y": 30, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=spec", "displayText": "スペック" } },
-    { "bounds": { "x": 1670, "y": 30, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=netaime", "displayText": "狙い目" } },
+    { "bounds": { "x": 1670, "y": 30, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=normal", "displayText": "通常時" } },
     { "bounds": { "x": 30, "y": 855, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=at", "displayText": "AT解説" } },
-    { "bounds": { "x": 850, "y": 855, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=exit", "displayText": "ヤメ時" } },
-    { "bounds": { "x": 1670, "y": 855, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=help", "displayText": "ヘルプ" } }
+    { "bounds": { "x": 850, "y": 855, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=after", "displayText": "AT後" } },
+    { "bounds": { "x": 1670, "y": 855, "width": 790, "height": 790 }, "action": { "type": "postback", "data": "action=exit", "displayText": "ヤメ時" } }
   ]
 }
 JSON

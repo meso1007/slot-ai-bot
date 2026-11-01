@@ -15,10 +15,10 @@ make_cell() {
 
 make_cell "機種選択" "#3b5bdb" tmp_richmenu/1.png
 make_cell "スペック" "#2f9e44" tmp_richmenu/2.png
-make_cell "狙い目"   "#e8590c" tmp_richmenu/3.png
+make_cell "通常時"   "#e8590c" tmp_richmenu/3.png
 make_cell "AT解説"   "#9c36b5" tmp_richmenu/4.png
-make_cell "ヤメ時"   "#c92a2a" tmp_richmenu/5.png
-make_cell "ヘルプ"   "#495057" tmp_richmenu/6.png
+make_cell "AT後"     "#0ca678" tmp_richmenu/5.png
+make_cell "ヤメ時"   "#c92a2a" tmp_richmenu/6.png
 
 magick montage tmp_richmenu/1.png tmp_richmenu/2.png tmp_richmenu/3.png \
   tmp_richmenu/4.png tmp_richmenu/5.png tmp_richmenu/6.png \
