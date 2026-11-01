@@ -1,9 +1,10 @@
-import { MACHINES, MACHINE_ORDER } from './data';
+import { MACHINES, MACHINE_ALIASES, MACHINE_ORDER } from './data';
 import { getMachineName, getSection } from './machineLoader';
 import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
 import { aiFlexMessage, sectionFlexMessage } from './flex';
 import { formatForLine, reply, showLoading, verifySignature } from './line';
+import { matchIds } from './search';
 import type { LineEvent } from './line';
 
 export interface Env {
@@ -66,25 +67,19 @@ async function handleText(
 ): Promise<void> {
   const t = text.trim();
 
-  // 機種ID or 機種名での選択（部分一致も許可）
-  for (const [id, md] of Object.entries(MACHINES)) {
-    const name = getMachineName(md);
-    const byName = name && (t.includes(name) || (t.length >= 2 && name.includes(t)));
-    if (t === id || byName) {
-      await env.MACHINE_STATE.put(userId, id);
-      await rememberMachine(userId, id, env);
-      await reply(
-        replyToken,
-        [
-          {
-            type: 'text',
-            text: `${name || id} を選択しました。\n「特徴」「スペック」「通常時」「AT解説」「AT後」「ヤメ時」または自由に質問してください。`,
-          },
-        ],
-        env.LINE_CHANNEL_ACCESS_TOKEN,
-      );
-      return;
-    }
+  if (MACHINES[t]) {
+    await selectMachine(userId, t, replyToken, env);
+    return;
+  }
+
+  const matched = findMachines(t);
+  if (matched.length === 1) {
+    await selectMachine(userId, matched[0], replyToken, env);
+    return;
+  }
+  if (matched.length > 1) {
+    await reply(replyToken, [candidateMessage(matched)], env.LINE_CHANNEL_ACCESS_TOKEN);
+    return;
   }
 
   const machineId = await env.MACHINE_STATE.get(userId);
@@ -189,12 +184,65 @@ async function handlePostback(
 const HELP_TEXT = [
   '【使い方】',
   '下のメニューから操作できます。',
-  '・機種選択: 機種を切り替え',
+  '・機種選択: ボタン or 機種名の入力で切り替え',
   '・特徴 / 評価 / 類似機種: まとめ・評判・近い台を表示',
   '・スペック / 通常時 / AT解説 / AT後 / ヤメ時: 定型情報を表示',
   '・自由質問: そのままメッセージを送信',
   '例:「380Gから打てる？」',
 ].join('\n');
+
+function findMachines(query: string): string[] {
+  return matchIds(
+    query,
+    Object.entries(MACHINES).map(([id, md]) => ({
+      id,
+      name: getMachineName(md) || id,
+      aliases: MACHINE_ALIASES[id],
+    })),
+  );
+}
+
+async function selectMachine(
+  userId: string,
+  id: string,
+  replyToken: string,
+  env: Env,
+): Promise<void> {
+  await env.MACHINE_STATE.put(userId, id);
+  await rememberMachine(userId, id, env);
+  const name = getMachineName(MACHINES[id]) || id;
+  await reply(
+    replyToken,
+    [
+      {
+        type: 'text',
+        text: `${name} を選択しました。\n「特徴」「評価」「スペック」「通常時」「AT解説」「AT後」「ヤメ時」または自由に質問してください。`,
+      },
+    ],
+    env.LINE_CHANNEL_ACCESS_TOKEN,
+  );
+}
+
+function candidateMessage(ids: string[]) {
+  const items: QuickReplyItem[] = ids.slice(0, 13).map((id) => {
+    const name = getMachineName(MACHINES[id]) || id;
+    return {
+      type: 'action',
+      action: {
+        type: 'postback',
+        label: name.slice(0, 20),
+        data: `machine=${id}&action=select`,
+        displayText: name,
+      },
+    };
+  });
+  const extra = ids.length > 13 ? '\n候補が多いため、機種名を詳しく入力してください。' : '';
+  return {
+    type: 'text' as const,
+    text: `候補が複数あります。選んでください。${extra}`,
+    quickReply: { items },
+  };
+}
 
 const PAGE_SIZE = 11;
 
@@ -267,7 +315,10 @@ async function machineSelectMessage(userId: string, page: number, env: Env) {
   }
   return {
     type: 'text' as const,
-    text: `機種を選んでください（${p + 1}/${totalPages}）\n機種名を直接入力しても選べます。`,
+    text:
+      totalPages > 1
+        ? `機種を選んでください（${p + 1}/${totalPages}）\n機種名を直接入力しても選べます。`
+        : '機種を選んでください。\n機種名を直接入力しても選べます。',
     quickReply: { items },
   };
 }
