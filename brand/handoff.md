@@ -4,6 +4,7 @@ Method: `logo-design` skill (0x-wzw/logo-design) — research → 8 studies → 
 
 ## Selected system
 - **Primary mark:** Study 01 APERTURE C — a C ring with a 64° right aperture and a vertical needle.
+- **Avatar variant:** C aperture + S-route with a north arrow (`suite/avatar.svg`) — used for the LINE profile icon so the mark carries the SC / route story at large sizes.
 - **Geometry:** R 170 / SW 24 / GAP 64° / needle 150 × 34 / needle stroke 18 / ticks 120–140.
 - **Micro-mark:** R 54 / SW 24 / GAP 90° / needle 42 × 14, designed for 16px.
 - **Palette:** ink `#0B1220`, blue `#1D4ED8` (paper), light blue `#60A5FA` (dark), paper `#FFFFFF`.
@@ -25,7 +26,7 @@ Method: `logo-design` skill (0x-wzw/logo-design) — research → 8 studies → 
 - `brand/out/` — rendered PNGs + studies sheet + blur test
 
 ## Account usage
-- LINE profile image: `assets/icon.png` (640×640, transparent PNG, blue lines only, no fill).
+- LINE profile image: `assets/icon.png` (640×640, transparent PNG, blue lines only, no fill; generated from `suite/avatar.svg`).
 - Account name: `SLOT COMPASS` (or `スロットコンパス`).
 - Card wordmark: `SLOT COMPASS` (already in `src/flex.ts`).
 
@@ -40,7 +41,7 @@ Method: `logo-design` skill (0x-wzw/logo-design) — research → 8 studies → 
 | Test | Result | Evidence |
 | --- | --- | --- |
 | Single color | pass | `suite/symbol-mono.svg` |
-| Favicon ladder 16→96 | pass with caveat | 16px: C reads, needle reduces to a bar |
+| Favicon ladder 16→96 | pass with caveat | 16px: core C+needle reads; avatar needs a simplified C+arrow micro-mark |
 | Blur σ1.2 / σ2.6 | pass | `out/blur.png` |
 | Contrast | pass | `qa/contrast.md` |
 | Scrolling (<1s) | **pending** | needs real thumb test |

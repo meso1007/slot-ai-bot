@@ -19,3 +19,6 @@ Client tests: T1 16px / T2 tool-not-casino / T3 distinct from AI-chat-compass / 
 - Primary: 01 APERTURE C (C aperture 64°, needle 150×34, R170/SW24).
 - Alternate (not shipped): 02 S–C INTERLOCK, reserved for a future monogram lockup.
 - Micro-mark: R54 / SW24 / GAP90° / needle 42×14, designed at 16px first.
+
+
+**Client feedback after suite:** the plain compass felt monotonous. The account icon was moved to the **C + S-route** avatar variant (`concepts/a-c-s-route.svg`), while Study 01 remains the construction core for lockups.
