@@ -53,9 +53,23 @@ async function handleEvent(event: LineEvent, env: Env): Promise<void> {
   } else if (event.type === 'follow') {
     const displayName = await getDisplayName(userId, env.LINE_CHANNEL_ACCESS_TOKEN);
     const greeting = displayName ? `${displayName}さん、初めまして！` : '初めまして！';
+    const welcome = {
+      type: 'text' as const,
+      text: [
+        greeting,
+        'SLOT COMPASS は、台の横で3秒で判断するためのリファレンスです。',
+        '',
+        '・下のメニューから機種を選ぶ',
+        '・「評価 / スペック / 狙い目 / AT / 終了後」をタップ',
+        '・機種名を直接入力してもOK',
+        '・わからないことは、そのまま質問',
+        '',
+        'まずは機種を選んでください。',
+      ].join('\n'),
+    };
     await reply(
       replyToken,
-      [await machineSelectMessage(userId, 0, env, true, greeting)],
+      [welcome, await machineSelectMessage(userId, 0, env)],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
   }
