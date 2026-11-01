@@ -13,9 +13,12 @@ const C = {
   line: '#E2E8F0',
   hairline: '#F1F5F9',
   surface: '#FFFFFF',
-  canvas: '#F8FAFC',
-  accent: '#0F766E',
-  accentSoft: '#ECFDF5',
+  canvas: '#FFF9F8',
+  band: '#FFF3F1',
+  accent: '#D92D20',
+  accentInk: '#B42318',
+  accentSoft: '#FFF1F0',
+  accentLine: '#FECACA',
 };
 
 export function parseSectionItems(body: string): SectionItem[] {
@@ -76,7 +79,7 @@ function pill(text: string) {
 }
 
 function header(label: string, title: string, subtitle?: string) {
-  const contents: unknown[] = [
+  const inner: unknown[] = [
     {
       type: 'box',
       layout: 'horizontal',
@@ -86,7 +89,8 @@ function header(label: string, title: string, subtitle?: string) {
           type: 'text',
           text: 'SLOT AI',
           size: 'xxs',
-          color: C.faint,
+          color: C.accentInk,
+          weight: 'bold',
           align: 'end',
           gravity: 'center',
           flex: 1,
@@ -104,7 +108,7 @@ function header(label: string, title: string, subtitle?: string) {
     },
   ];
   if (subtitle) {
-    contents.push({
+    inner.push({
       type: 'text',
       text: subtitle,
       size: 'xs',
@@ -112,16 +116,25 @@ function header(label: string, title: string, subtitle?: string) {
       margin: 'xs',
     });
   }
-  contents.push({ type: 'separator', margin: 'lg', color: C.line });
+  inner.push({ type: 'separator', margin: 'lg', color: C.accentLine });
   return {
     type: 'box',
     layout: 'vertical',
-    backgroundColor: C.surface,
-    paddingTop: '20px',
-    paddingBottom: '14px',
-    paddingStart: '20px',
-    paddingEnd: '20px',
-    contents,
+    backgroundColor: C.band,
+    paddingAll: '0px',
+    spacing: 'none',
+    contents: [
+      { type: 'separator', color: C.accent, margin: 'none' },
+      {
+        type: 'box',
+        layout: 'vertical',
+        paddingTop: '18px',
+        paddingBottom: '14px',
+        paddingStart: '20px',
+        paddingEnd: '20px',
+        contents: inner,
+      },
+    ],
   };
 }
 
@@ -148,7 +161,8 @@ function footer(hint: string) {
             type: 'text',
             text: 'SLOT AI',
             size: 'xxs',
-            color: C.faint,
+            color: C.accentInk,
+            weight: 'bold',
             align: 'end',
             gravity: 'center',
           },
@@ -202,6 +216,32 @@ export function sectionFlexMessage(name: string, label: string, body: string): L
   if (items.length > 0) {
     items.forEach((item, i) => {
       const isRating = item.label.includes('総合評価');
+      const valueNode = isRating
+        ? {
+            type: 'box',
+            layout: 'vertical',
+            backgroundColor: C.accentSoft,
+            cornerRadius: 'md',
+            paddingAll: '12px',
+            margin: 'sm',
+            contents: [
+              {
+                type: 'text',
+                text: formatValue(item.value),
+                size: 'xl',
+                color: C.accentInk,
+                weight: 'bold',
+                wrap: true,
+              },
+            ],
+          }
+        : {
+            type: 'text',
+            text: formatValue(item.value),
+            size: 'sm',
+            color: C.body,
+            wrap: true,
+          };
       contents.push({
         type: 'box',
         layout: 'vertical',
@@ -216,14 +256,7 @@ export function sectionFlexMessage(name: string, label: string, body: string): L
             weight: 'bold',
             wrap: true,
           },
-          {
-            type: 'text',
-            text: formatValue(item.value),
-            size: isRating ? 'lg' : 'sm',
-            color: isRating ? C.ink : C.body,
-            weight: isRating ? 'bold' : 'regular',
-            wrap: true,
-          },
+          valueNode,
         ],
       });
       if (i < items.length - 1) {
@@ -283,7 +316,7 @@ export function machinePickerFlexMessage(params: {
         type: 'text',
         text: '最近使った台',
         size: 'xs',
-        color: C.muted,
+        color: C.accentInk,
         weight: 'bold',
         margin: contents.length ? 'lg' : 'none',
       });
@@ -294,7 +327,7 @@ export function machinePickerFlexMessage(params: {
         type: 'text',
         text: '人気の台',
         size: 'xs',
-        color: C.muted,
+        color: C.accentInk,
         weight: 'bold',
         margin: contents.length ? 'lg' : 'none',
       });
@@ -326,7 +359,7 @@ export function machinePickerFlexMessage(params: {
           type: 'text',
           text: '›',
           size: 'lg',
-          color: C.faint,
+          color: C.accentInk,
           gravity: 'center',
           flex: 0,
         },
@@ -392,7 +425,7 @@ export function machinePickerFlexMessage(params: {
         backgroundColor: C.canvas,
         paddingAll: '12px',
         contents: [
-          { type: 'separator', color: C.line, margin: 'none' },
+          { type: 'separator', color: C.accentLine, margin: 'none' },
           {
             type: 'box',
             layout: 'horizontal',
