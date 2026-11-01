@@ -39,6 +39,7 @@ export function buildSystemPrompt(machineName: string, md: string): string {
     '- Markdownに書かれていない数値は絶対に出力しないこと。',
     '- 計算が必要な場合は暗算せず、Markdownの元数値をそのまま示すこと。',
     '- 不明な点は「記載がありません」と答えること。',
+    '- 矢印（→）は使わず、処理の流れや手順は改行と「↓」で表現すること。',
     '',
     '# 機種データ',
     md,

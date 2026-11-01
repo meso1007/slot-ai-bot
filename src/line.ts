@@ -8,6 +8,14 @@ export interface LineEvent {
 
 export type LineMessage = { type: 'text'; text: string; quickReply?: unknown };
 
+export function formatForLine(text: string): string {
+  return text
+    .replace(/\s*(?:→|⇒|➡|➜|->)\s*/g, '\n  ↓\n')
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export async function verifySignature(
   body: string,
   signature: string,

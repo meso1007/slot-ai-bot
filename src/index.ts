@@ -2,7 +2,7 @@ import { MACHINES } from './data';
 import { getMachineName, getSection } from './machineLoader';
 import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
-import { reply, showLoading, verifySignature } from './line';
+import { formatForLine, reply, showLoading, verifySignature } from './line';
 import type { LineEvent } from './line';
 
 export interface Env {
@@ -103,7 +103,7 @@ async function handleText(
     const body = getSection(md, route.section);
     await reply(
       replyToken,
-      [{ type: 'text', text: `【${name}｜${SECTION_LABEL[route.section]}】\n${body || '記載がありません。'}` }],
+      [{ type: 'text', text: formatForLine(`【${name}｜${SECTION_LABEL[route.section]}】\n${body || '記載がありません。'}`) }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
     return;
@@ -119,7 +119,7 @@ async function handleText(
     });
     await reply(
       replyToken,
-      [{ type: 'text', text: answer || 'うまく回答できませんでした。' }],
+      [{ type: 'text', text: formatForLine(answer || 'うまく回答できませんでした。') }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
   } catch (err) {
@@ -176,7 +176,7 @@ async function handlePostback(
     const body = getSection(md, section);
     await reply(
       replyToken,
-      [{ type: 'text', text: `【${name}｜${SECTION_LABEL[section]}】\n${body || '記載がありません。'}` }],
+      [{ type: 'text', text: formatForLine(`【${name}｜${SECTION_LABEL[section]}】\n${body || '記載がありません。'}`) }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
     return;
