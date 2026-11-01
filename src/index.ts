@@ -1,11 +1,11 @@
 import { MACHINES, MACHINE_ALIASES, MACHINE_ORDER } from './data';
-import { getMachineName, getSection } from './machineLoader';
+import { getMachineName, getSection, type SectionKey } from './machineLoader';
 import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
-import { aiFlexMessage, machinePickerFlexMessage, parseSectionItems, sectionFlexMessage } from './flex';
+import { aiFlexMessage, machinePickerFlexMessage, reviewFlexMessage, sectionFlexMessage } from './flex';
 import { formatForLine, reply, showLoading, verifySignature } from './line';
 import { matchIds } from './search';
-import type { LineEvent } from './line';
+import type { LineEvent, LineMessage } from './line';
 
 export interface Env {
   LINE_CHANNEL_ACCESS_TOKEN: string;
@@ -100,11 +100,11 @@ async function handleText(
   const route = routeText(t);
 
   if (route.kind === 'section') {
-    const body = getSection(md, route.section);
     const label = SECTION_LABEL[route.section];
+    const message = renderSectionMessage(md, name, route.section);
     await reply(
       replyToken,
-      [body ? sectionFlexMessage(name, label, body) : { type: 'text', text: `${name}｜${label}\n記載がありません。` }],
+      [message ?? { type: 'text', text: `${name}｜${label}\n記載がありません。` }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
     return;
@@ -171,11 +171,11 @@ async function handlePostback(
   const section = action ? ACTION_SECTION[action] : undefined;
 
   if (section) {
-    const body = getSection(md, section);
     const label = SECTION_LABEL[section];
+    const message = renderSectionMessage(md, name, section);
     await reply(
       replyToken,
-      [body ? sectionFlexMessage(name, label, body) : { type: 'text', text: `${name}｜${label}\n記載がありません。` }],
+      [message ?? { type: 'text', text: `${name}｜${label}\n記載がありません。` }],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
     return;
@@ -205,6 +205,20 @@ function findMachines(query: string): string[] {
   );
 }
 
+function renderSectionMessage(
+  md: string,
+  name: string,
+  section: SectionKey,
+): LineMessage | null {
+  if (section === 'REVIEW') {
+    const review = getSection(md, 'REVIEW');
+    const summary = getSection(md, 'SUMMARY');
+    return review ? reviewFlexMessage(name, summary, review) : null;
+  }
+  const body = getSection(md, section);
+  return body ? sectionFlexMessage(name, SECTION_LABEL[section], body) : null;
+}
+
 async function selectMachine(
   userId: string,
   id: string,
@@ -216,22 +230,14 @@ async function selectMachine(
   const md = MACHINES[id];
   const name = getMachineName(md) || id;
 
-  const review = getSection(md, 'REVIEW');
-  const summary = getSection(md, 'SUMMARY');
-  const gameplay = summary
-    ? parseSectionItems(summary).find((item) => item.label === 'ゲーム性')
-    : undefined;
-  const body = review && gameplay ? `- ゲーム性: ${gameplay.value}\n${review}` : review;
-
+  const message = renderSectionMessage(md, name, 'REVIEW');
   await reply(
     replyToken,
     [
-      body
-        ? sectionFlexMessage(name, SECTION_LABEL.REVIEW, body)
-        : {
-            type: 'text',
-            text: `${name} を選択しました。\n「特徴」「評価」「スペック」「通常時」「AT解説」「AT後」「ヤメ時」または自由に質問してください。`,
-          },
+      message ?? {
+        type: 'text',
+        text: `${name} を選択しました。\n「特徴」「評価」「スペック」「通常時」「AT解説」「AT後」「ヤメ時」または自由に質問してください。`,
+      },
     ],
     env.LINE_CHANNEL_ACCESS_TOKEN,
   );

@@ -6,19 +6,31 @@ interface SectionItem {
 }
 
 const C = {
-  ink: '#0B1220',
-  body: '#334155',
-  muted: '#64748B',
-  faint: '#94A3B8',
-  line: '#E2E8F0',
-  hairline: '#F1F5F9',
+  ink: '#0A0A0A',
+  body: '#3F3F46',
+  muted: '#78716C',
+  faint: '#A8A29E',
+  line: '#E7E5E4',
+  hairline: '#F5F5F4',
   surface: '#FFFFFF',
-  canvas: '#FFF9F8',
-  band: '#FFF3F1',
+  canvas: '#FFFBF9',
+  band: '#FFF4F1',
   accent: '#D92D20',
   accentInk: '#B42318',
   accentSoft: '#FFF1F0',
   accentLine: '#FECACA',
+  accentFaint: '#FCA5A5',
+};
+
+const SECTION_INDEX: Record<string, string> = {
+  特徴: '01',
+  スペック: '02',
+  通常時: '03',
+  AT解説: '04',
+  AT後: '05',
+  ヤメ時: '06',
+  評価: '07',
+  類似機種: '08',
 };
 
 export function parseSectionItems(body: string): SectionItem[] {
@@ -55,14 +67,24 @@ export function formatValue(value: string): string {
   return lines.join('\n').replace(/\n{3,}/g, '\n\n');
 }
 
-function pill(text: string) {
+function topBar() {
+  return {
+    type: 'box',
+    layout: 'vertical',
+    height: '4px',
+    backgroundColor: C.accent,
+    contents: [{ type: 'text', text: ' ', size: 'xxs' }],
+  };
+}
+
+function tag(text: string) {
   return {
     type: 'box',
     layout: 'horizontal',
     backgroundColor: C.accent,
-    cornerRadius: 'xl',
-    paddingStart: '10px',
-    paddingEnd: '10px',
+    cornerRadius: 'sm',
+    paddingStart: '8px',
+    paddingEnd: '8px',
     paddingTop: '4px',
     paddingBottom: '4px',
     flex: 0,
@@ -78,16 +100,16 @@ function pill(text: string) {
   };
 }
 
-function header(label: string, title: string, subtitle?: string) {
+function header(label: string, title: string, meta?: string, subtitle?: string) {
   const inner: unknown[] = [
     {
       type: 'box',
       layout: 'horizontal',
       contents: [
-        pill(label),
+        tag(label),
         {
           type: 'text',
-          text: 'SLOT AI',
+          text: meta ?? 'SLOT AI',
           size: 'xxs',
           color: C.accentInk,
           weight: 'bold',
@@ -100,7 +122,7 @@ function header(label: string, title: string, subtitle?: string) {
     {
       type: 'text',
       text: title,
-      size: 'xl',
+      size: 'xxl',
       color: C.ink,
       weight: 'bold',
       wrap: true,
@@ -113,10 +135,9 @@ function header(label: string, title: string, subtitle?: string) {
       text: subtitle,
       size: 'xs',
       color: C.muted,
-      margin: 'xs',
+      margin: 'sm',
     });
   }
-  inner.push({ type: 'separator', margin: 'lg', color: C.accentLine });
   return {
     type: 'box',
     layout: 'vertical',
@@ -124,12 +145,12 @@ function header(label: string, title: string, subtitle?: string) {
     paddingAll: '0px',
     spacing: 'none',
     contents: [
-      { type: 'separator', color: C.accent, margin: 'none' },
+      topBar(),
       {
         type: 'box',
         layout: 'vertical',
         paddingTop: '18px',
-        paddingBottom: '14px',
+        paddingBottom: '16px',
         paddingStart: '20px',
         paddingEnd: '20px',
         contents: inner,
@@ -145,9 +166,11 @@ function footer(hint: string) {
     backgroundColor: C.canvas,
     paddingAll: '16px',
     contents: [
+      { type: 'separator', color: C.accentLine, margin: 'none' },
       {
         type: 'box',
         layout: 'horizontal',
+        margin: 'sm',
         contents: [
           {
             type: 'text',
@@ -172,6 +195,37 @@ function footer(hint: string) {
   };
 }
 
+function parseScore(value: string): { score: number | null; source: string } {
+  const m = value.match(/([0-9]+(?:\.[0-9]+)?)\s*\/\s*5\s*(.*)$/);
+  if (!m) return { score: null, source: value };
+  const score = Number(m[1]);
+  const source = m[2]
+    .trim()
+    .replace(/^[（(]/, '')
+    .replace(/[）)]$/, '')
+    .trim();
+  return { score: Number.isFinite(score) ? score : null, source };
+}
+
+function ratingBar(score: number) {
+  const filled = Math.min(10, Math.max(0, Math.round(score * 2)));
+  return {
+    type: 'box',
+    layout: 'horizontal',
+    spacing: 'xs',
+    margin: 'md',
+    contents: Array.from({ length: 10 }, (_, i) => ({
+      type: 'box',
+      layout: 'vertical',
+      flex: 1,
+      height: '6px',
+      cornerRadius: 'xs',
+      backgroundColor: i < filled ? C.accent : C.accentLine,
+      contents: [{ type: 'text', text: ' ', size: 'xxs' }],
+    })),
+  };
+}
+
 export function aiFlexMessage(name: string, answer: string): LineMessage {
   return {
     type: 'flex',
@@ -179,7 +233,7 @@ export function aiFlexMessage(name: string, answer: string): LineMessage {
     contents: {
       type: 'bubble',
       size: 'giga',
-      header: header('AI相談', name),
+      header: header('AI相談', name, 'AI'),
       body: {
         type: 'box',
         layout: 'vertical',
@@ -195,10 +249,18 @@ export function aiFlexMessage(name: string, answer: string): LineMessage {
             contents: [
               {
                 type: 'text',
+                text: '回答',
+                size: 'xs',
+                color: C.accentInk,
+                weight: 'bold',
+              },
+              {
+                type: 'text',
                 text: answer,
                 size: 'sm',
                 color: C.ink,
                 wrap: true,
+                margin: 'sm',
               },
             ],
           },
@@ -215,48 +277,44 @@ export function sectionFlexMessage(name: string, label: string, body: string): L
 
   if (items.length > 0) {
     items.forEach((item, i) => {
-      const isRating = item.label.includes('総合評価');
-      const valueNode = isRating
-        ? {
-            type: 'box',
-            layout: 'vertical',
-            backgroundColor: C.accentSoft,
-            cornerRadius: 'md',
-            paddingAll: '12px',
-            margin: 'sm',
-            contents: [
-              {
-                type: 'text',
-                text: formatValue(item.value),
-                size: 'xl',
-                color: C.accentInk,
-                weight: 'bold',
-                wrap: true,
-              },
-            ],
-          }
-        : {
-            type: 'text',
-            text: formatValue(item.value),
-            size: 'sm',
-            color: C.body,
-            wrap: true,
-          };
       contents.push({
         type: 'box',
-        layout: 'vertical',
-        spacing: 'xs',
+        layout: 'horizontal',
         margin: i === 0 ? 'none' : 'lg',
+        spacing: 'md',
         contents: [
           {
             type: 'text',
-            text: item.label,
-            size: 'xs',
-            color: C.muted,
+            text: String(i + 1).padStart(2, '0'),
+            size: 'sm',
+            color: C.accentFaint,
             weight: 'bold',
-            wrap: true,
+            flex: 0,
+            gravity: 'top',
           },
-          valueNode,
+          {
+            type: 'box',
+            layout: 'vertical',
+            flex: 1,
+            spacing: 'xs',
+            contents: [
+              {
+                type: 'text',
+                text: item.label,
+                size: 'xs',
+                color: C.muted,
+                weight: 'bold',
+                wrap: true,
+              },
+              {
+                type: 'text',
+                text: formatValue(item.value),
+                size: 'sm',
+                color: C.body,
+                wrap: true,
+              },
+            ],
+          },
         ],
       });
       if (i < items.length - 1) {
@@ -279,12 +337,222 @@ export function sectionFlexMessage(name: string, label: string, body: string): L
     contents: {
       type: 'bubble',
       size: 'giga',
-      header: header(label, name),
+      header: header(label, name, SECTION_INDEX[label] ? `${SECTION_INDEX[label]} / 08` : undefined),
       body: {
         type: 'box',
         layout: 'vertical',
         backgroundColor: C.surface,
-        paddingTop: '16px',
+        paddingTop: '18px',
+        paddingBottom: '20px',
+        paddingStart: '20px',
+        paddingEnd: '20px',
+        spacing: 'none',
+        contents,
+      },
+      footer: footer('下のメニューから他の項目も見られます'),
+    },
+  };
+}
+
+export function reviewFlexMessage(
+  name: string,
+  summaryBody: string | undefined,
+  reviewBody: string,
+): LineMessage {
+  const items = parseSectionItems(reviewBody);
+  const rating = items.find((i) => i.label.includes('総合評価'));
+  const other = items.find((i) => i.label.includes('他サイト'));
+  const good = items.find((i) => i.label.includes('良い点'));
+  const bad = items.find((i) => i.label.includes('気になる点'));
+  const gameplay = summaryBody
+    ? parseSectionItems(summaryBody).find((i) => i.label === 'ゲーム性')
+    : undefined;
+  const parsed = rating ? parseScore(rating.value) : { score: null, source: '不明' };
+
+  const contents: unknown[] = [];
+
+  if (gameplay) {
+    contents.push({
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'xs',
+      contents: [
+        { type: 'text', text: 'ゲーム性', size: 'xs', color: C.muted, weight: 'bold' },
+        {
+          type: 'text',
+          text: formatValue(gameplay.value),
+          size: 'sm',
+          color: C.body,
+          wrap: true,
+        },
+      ],
+    });
+    contents.push({ type: 'separator', margin: 'lg', color: C.hairline });
+  }
+
+  if (parsed.score !== null) {
+    contents.push({
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: C.accentSoft,
+      cornerRadius: 'lg',
+      paddingAll: '16px',
+      margin: gameplay ? 'lg' : 'none',
+      contents: [
+        { type: 'text', text: '総合評価', size: 'xs', color: C.accentInk, weight: 'bold' },
+        {
+          type: 'box',
+          layout: 'horizontal',
+          margin: 'sm',
+          contents: [
+            {
+              type: 'text',
+              text: parsed.score.toFixed(1),
+              size: '5xl',
+              color: C.accentInk,
+              weight: 'bold',
+              flex: 0,
+            },
+            {
+              type: 'text',
+              text: '/ 5',
+              size: 'sm',
+              color: C.accentInk,
+              margin: 'sm',
+              gravity: 'bottom',
+              flex: 0,
+            },
+          ],
+        },
+        ratingBar(parsed.score),
+        ...(parsed.source
+          ? [
+              {
+                type: 'text',
+                text: parsed.source,
+                size: 'xs',
+                color: C.muted,
+                margin: 'sm',
+                wrap: true,
+              },
+            ]
+          : []),
+      ],
+    });
+  } else if (rating) {
+    contents.push({
+      type: 'box',
+      layout: 'vertical',
+      margin: gameplay ? 'lg' : 'none',
+      contents: [
+        { type: 'text', text: '総合評価', size: 'xs', color: C.muted, weight: 'bold' },
+        {
+          type: 'text',
+          text: formatValue(rating.value),
+          size: 'sm',
+          color: C.body,
+          wrap: true,
+        },
+      ],
+    });
+  }
+
+  if (other) {
+    contents.push({
+      type: 'box',
+      layout: 'vertical',
+      margin: 'lg',
+      spacing: 'xs',
+      contents: [
+        { type: 'text', text: '他サイト評価', size: 'xs', color: C.muted, weight: 'bold' },
+        {
+          type: 'text',
+          text: formatValue(other.value),
+          size: 'sm',
+          color: C.body,
+          wrap: true,
+        },
+      ],
+    });
+  }
+
+  const reactions: [SectionItem | undefined, string, string][] = [
+    [good, '良い点', C.accentInk],
+    [bad, '気になる点', C.muted],
+  ];
+  for (const [item, fallbackLabel, dotColor] of reactions) {
+    if (!item) continue;
+    contents.push({
+      type: 'box',
+      layout: 'vertical',
+      margin: 'xl',
+      spacing: 'xs',
+      contents: [
+        {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            { type: 'text', text: '●', size: 'xxs', color: dotColor, flex: 0 },
+            {
+              type: 'text',
+              text: item.label || fallbackLabel,
+              size: 'xs',
+              color: dotColor,
+              weight: 'bold',
+              margin: 'sm',
+              flex: 0,
+            },
+          ],
+        },
+        {
+          type: 'text',
+          text: formatValue(item.value),
+          size: 'sm',
+          color: C.body,
+          wrap: true,
+        },
+      ],
+    });
+  }
+
+  const known = new Set(
+    [rating, other, good, bad].filter((v): v is SectionItem => Boolean(v)),
+  );
+  const rest = items.filter((i) => !known.has(i));
+  if (rest.length) {
+    contents.push({ type: 'separator', margin: 'lg', color: C.hairline });
+    rest.forEach((item, i) => {
+      contents.push({
+        type: 'box',
+        layout: 'vertical',
+        margin: i === 0 ? 'lg' : 'md',
+        spacing: 'xs',
+        contents: [
+          { type: 'text', text: item.label, size: 'xs', color: C.muted, weight: 'bold' },
+          {
+            type: 'text',
+            text: formatValue(item.value),
+            size: 'sm',
+            color: C.body,
+            wrap: true,
+          },
+        ],
+      });
+    });
+  }
+
+  return {
+    type: 'flex',
+    altText: `${name}｜評価`,
+    contents: {
+      type: 'bubble',
+      size: 'giga',
+      header: header('評価', name, '07 / 08'),
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: C.surface,
+        paddingTop: '18px',
         paddingBottom: '20px',
         paddingStart: '20px',
         paddingEnd: '20px',
@@ -408,7 +676,12 @@ export function machinePickerFlexMessage(params: {
     contents: {
       type: 'bubble',
       size: 'giga',
-      header: header('一覧', '機種を選ぶ', `全${total}台 ・ ${page + 1}/${totalPages}ページ`),
+      header: header(
+        '一覧',
+        '機種を選ぶ',
+        'SELECT',
+        `全${total}台 ・ ${page + 1}/${totalPages}ページ`,
+      ),
       body: {
         type: 'box',
         layout: 'vertical',
