@@ -56,7 +56,18 @@ async function handleEvent(event: LineEvent, env: Env): Promise<void> {
       [
         {
           type: 'text',
-          text: 'ようこそ、SLOT COMPASS へ。\n台の横で、3秒で判断。\nまず機種を選んでください。',
+          text: [
+            'ようこそ、SLOT COMPASS へ。',
+            '台の横で、3秒で判断するためのリファレンスです。',
+            '',
+            '・下のメニューから「機種選択」',
+            '・台を選ぶと、評価と概要を表示',
+            '・「評価 / スペック / 狙い目 / AT / 終了後」をタップ',
+            '・機種名を直接入力してもOK',
+            '・わからないことは、そのまま質問',
+            '',
+            'まずは機種を選んでください。',
+          ].join('\n'),
         },
         await machineSelectMessage(userId, 0, env),
       ],
