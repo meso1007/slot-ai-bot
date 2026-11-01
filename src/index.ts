@@ -292,7 +292,8 @@ function orderedMachineIds(recent: string[]): string[] {
 }
 
 async function machineSelectMessage(userId: string, page: number, env: Env) {
-  const ids = orderedMachineIds(await getRecent(userId, env));
+  const recent = await getRecent(userId, env);
+  const ids = orderedMachineIds(recent);
   const totalPages = Math.max(1, Math.ceil(ids.length / PAGE_SIZE));
   const p = Math.min(Math.max(0, page), totalPages - 1);
   await env.MACHINE_STATE.put(`page:${userId}`, String(p));
@@ -300,5 +301,5 @@ async function machineSelectMessage(userId: string, page: number, env: Env) {
     id,
     name: getMachineName(MACHINES[id]) || id,
   }));
-  return machinePickerFlexMessage({ page: p, totalPages, total: ids.length, items });
+  return machinePickerFlexMessage({ page: p, totalPages, total: ids.length, items, recent });
 }

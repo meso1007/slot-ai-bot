@@ -5,6 +5,19 @@ interface SectionItem {
   value: string;
 }
 
+const C = {
+  ink: '#0B1220',
+  body: '#334155',
+  muted: '#64748B',
+  faint: '#94A3B8',
+  line: '#E2E8F0',
+  hairline: '#F1F5F9',
+  surface: '#FFFFFF',
+  canvas: '#F8FAFC',
+  accent: '#0F766E',
+  accentSoft: '#ECFDF5',
+};
+
 export function parseSectionItems(body: string): SectionItem[] {
   const items: SectionItem[] = [];
   for (const raw of body.split('\n')) {
@@ -39,6 +52,112 @@ export function formatValue(value: string): string {
   return lines.join('\n').replace(/\n{3,}/g, '\n\n');
 }
 
+function pill(text: string) {
+  return {
+    type: 'box',
+    layout: 'horizontal',
+    backgroundColor: C.accent,
+    cornerRadius: 'xl',
+    paddingStart: '10px',
+    paddingEnd: '10px',
+    paddingTop: '4px',
+    paddingBottom: '4px',
+    flex: 0,
+    contents: [
+      {
+        type: 'text',
+        text,
+        size: 'xs',
+        color: '#FFFFFF',
+        weight: 'bold',
+      },
+    ],
+  };
+}
+
+function header(label: string, title: string, subtitle?: string) {
+  const contents: unknown[] = [
+    {
+      type: 'box',
+      layout: 'horizontal',
+      contents: [
+        pill(label),
+        {
+          type: 'text',
+          text: 'SLOT AI',
+          size: 'xxs',
+          color: C.faint,
+          align: 'end',
+          gravity: 'center',
+          flex: 1,
+        },
+      ],
+    },
+    {
+      type: 'text',
+      text: title,
+      size: 'xl',
+      color: C.ink,
+      weight: 'bold',
+      wrap: true,
+      margin: 'md',
+    },
+  ];
+  if (subtitle) {
+    contents.push({
+      type: 'text',
+      text: subtitle,
+      size: 'xs',
+      color: C.muted,
+      margin: 'xs',
+    });
+  }
+  contents.push({ type: 'separator', margin: 'lg', color: C.line });
+  return {
+    type: 'box',
+    layout: 'vertical',
+    backgroundColor: C.surface,
+    paddingTop: '20px',
+    paddingBottom: '14px',
+    paddingStart: '20px',
+    paddingEnd: '20px',
+    contents,
+  };
+}
+
+function footer(hint: string) {
+  return {
+    type: 'box',
+    layout: 'vertical',
+    backgroundColor: C.canvas,
+    paddingAll: '16px',
+    contents: [
+      {
+        type: 'box',
+        layout: 'horizontal',
+        contents: [
+          {
+            type: 'text',
+            text: hint,
+            size: 'xs',
+            color: C.muted,
+            flex: 1,
+            wrap: true,
+          },
+          {
+            type: 'text',
+            text: 'SLOT AI',
+            size: 'xxs',
+            color: C.faint,
+            align: 'end',
+            gravity: 'center',
+          },
+        ],
+      },
+    ],
+  };
+}
+
 export function aiFlexMessage(name: string, answer: string): LineMessage {
   return {
     type: 'flex',
@@ -46,101 +165,80 @@ export function aiFlexMessage(name: string, answer: string): LineMessage {
     contents: {
       type: 'bubble',
       size: 'giga',
-      header: {
-        type: 'box',
-        layout: 'vertical',
-        backgroundColor: '#1D4ED8',
-        paddingAll: '16px',
-        contents: [
-          {
-            type: 'text',
-            text: 'AI回答',
-            size: 'xs',
-            color: '#BFDBFE',
-            weight: 'bold',
-          },
-          {
-            type: 'text',
-            text: name,
-            size: 'md',
-            color: '#FFFFFF',
-            weight: 'bold',
-            wrap: true,
-            margin: 'xs',
-          },
-        ],
-      },
+      header: header('AI相談', name),
       body: {
         type: 'box',
         layout: 'vertical',
-        backgroundColor: '#FFFFFF',
-        paddingAll: '16px',
+        backgroundColor: C.surface,
+        paddingAll: '20px',
         contents: [
           {
-            type: 'text',
-            text: answer,
-            size: 'sm',
-            color: '#0F172A',
-            wrap: true,
+            type: 'box',
+            layout: 'vertical',
+            backgroundColor: C.accentSoft,
+            cornerRadius: 'lg',
+            paddingAll: '16px',
+            contents: [
+              {
+                type: 'text',
+                text: answer,
+                size: 'sm',
+                color: C.ink,
+                wrap: true,
+              },
+            ],
           },
         ],
       },
-      footer: {
-        type: 'box',
-        layout: 'vertical',
-        backgroundColor: '#F8FAFC',
-        paddingAll: '12px',
-        contents: [
-          {
-            type: 'text',
-            text: '参考情報です。最終判断は自己責任で。',
-            size: 'xs',
-            color: '#94A3B8',
-            align: 'center',
-            wrap: true,
-          },
-        ],
-      },
+      footer: footer('※ 参考情報です。最終判断は自己責任で。'),
     },
   };
 }
 
 export function sectionFlexMessage(name: string, label: string, body: string): LineMessage {
   const items = parseSectionItems(body);
-  const contents =
-    items.length > 0
-      ? items.map((item, i) => ({
-          type: 'box',
-          layout: 'vertical',
-          spacing: 'xs',
-          margin: i === 0 ? 'none' : 'lg',
-          contents: [
-            {
-              type: 'text',
-              text: item.label,
-              size: 'xs',
-              color: '#64748B',
-              weight: 'bold',
-              wrap: true,
-            },
-            {
-              type: 'text',
-              text: formatValue(item.value),
-              size: 'sm',
-              color: '#0F172A',
-              wrap: true,
-            },
-          ],
-        }))
-      : [
+  const contents: unknown[] = [];
+
+  if (items.length > 0) {
+    items.forEach((item, i) => {
+      const isRating = item.label.includes('総合評価');
+      contents.push({
+        type: 'box',
+        layout: 'vertical',
+        spacing: 'xs',
+        margin: i === 0 ? 'none' : 'lg',
+        contents: [
           {
             type: 'text',
-            text: formatValue(body.replace(/^[-・]\s*/gm, '')),
-            size: 'sm',
-            color: '#0F172A',
+            text: item.label,
+            size: 'xs',
+            color: C.muted,
+            weight: 'bold',
             wrap: true,
           },
-        ];
+          {
+            type: 'text',
+            text: formatValue(item.value),
+            size: isRating ? 'lg' : 'sm',
+            color: isRating ? C.ink : C.body,
+            weight: isRating ? 'bold' : 'regular',
+            wrap: true,
+          },
+        ],
+      });
+      if (i < items.length - 1) {
+        contents.push({ type: 'separator', margin: 'lg', color: C.hairline });
+      }
+    });
+  } else {
+    contents.push({
+      type: 'text',
+      text: formatValue(body.replace(/^[-・]\s*/gm, '')),
+      size: 'sm',
+      color: C.body,
+      wrap: true,
+    });
+  }
 
   return {
     type: 'flex',
@@ -148,54 +246,19 @@ export function sectionFlexMessage(name: string, label: string, body: string): L
     contents: {
       type: 'bubble',
       size: 'giga',
-      header: {
-        type: 'box',
-        layout: 'vertical',
-        backgroundColor: '#0F172A',
-        paddingAll: '16px',
-        contents: [
-          {
-            type: 'text',
-            text: label,
-            size: 'xs',
-            color: '#93C5FD',
-            weight: 'bold',
-          },
-          {
-            type: 'text',
-            text: name,
-            size: 'lg',
-            color: '#FFFFFF',
-            weight: 'bold',
-            wrap: true,
-            margin: 'xs',
-          },
-        ],
-      },
+      header: header(label, name),
       body: {
         type: 'box',
         layout: 'vertical',
-        backgroundColor: '#FFFFFF',
-        paddingAll: '16px',
+        backgroundColor: C.surface,
+        paddingTop: '16px',
+        paddingBottom: '20px',
+        paddingStart: '20px',
+        paddingEnd: '20px',
         spacing: 'none',
         contents,
       },
-      footer: {
-        type: 'box',
-        layout: 'vertical',
-        backgroundColor: '#F8FAFC',
-        paddingAll: '12px',
-        contents: [
-          {
-            type: 'text',
-            text: '下のメニューから他の項目も見られます',
-            size: 'xs',
-            color: '#94A3B8',
-            align: 'center',
-            wrap: true,
-          },
-        ],
-      },
+      footer: footer('下のメニューから他の項目も見られます'),
     },
   };
 }
@@ -205,25 +268,43 @@ export function machinePickerFlexMessage(params: {
   totalPages: number;
   total: number;
   items: { id: string; name: string }[];
+  recent?: string[];
 }): LineMessage {
   const { page, totalPages, total, items } = params;
-  const bodyContents: unknown[] = [
-    {
-      type: 'text',
-      text: '上から最近使った順・人気順',
-      size: 'xs',
-      color: '#64748B',
-      margin: 'none',
-    },
-  ];
-  for (const item of items) {
-    bodyContents.push({
+  const recentSet = new Set(params.recent ?? []);
+  const contents: unknown[] = [];
+  let recentHeader = false;
+  let otherHeader = false;
+
+  items.forEach((item, i) => {
+    const isRecent = recentSet.has(item.id);
+    if (isRecent && !recentHeader) {
+      contents.push({
+        type: 'text',
+        text: '最近使った台',
+        size: 'xs',
+        color: C.muted,
+        weight: 'bold',
+        margin: contents.length ? 'lg' : 'none',
+      });
+      recentHeader = true;
+    }
+    if (!isRecent && !otherHeader) {
+      contents.push({
+        type: 'text',
+        text: '人気の台',
+        size: 'xs',
+        color: C.muted,
+        weight: 'bold',
+        margin: contents.length ? 'lg' : 'none',
+      });
+      otherHeader = true;
+    }
+    contents.push({
       type: 'box',
       layout: 'horizontal',
-      backgroundColor: '#F8FAFC',
-      cornerRadius: '10px',
-      paddingAll: '12px',
-      margin: 'sm',
+      paddingTop: '14px',
+      paddingBottom: '14px',
       spacing: 'sm',
       action: {
         type: 'message',
@@ -235,7 +316,8 @@ export function machinePickerFlexMessage(params: {
           type: 'text',
           text: item.name,
           size: 'sm',
-          color: '#0F172A',
+          color: C.ink,
+          weight: 'bold',
           wrap: true,
           flex: 1,
           gravity: 'center',
@@ -244,47 +326,44 @@ export function machinePickerFlexMessage(params: {
           type: 'text',
           text: '›',
           size: 'lg',
-          color: '#94A3B8',
+          color: C.faint,
           gravity: 'center',
           flex: 0,
         },
       ],
     });
-  }
+    if (i < items.length - 1) {
+      contents.push({ type: 'separator', color: C.hairline });
+    }
+  });
 
-  const footerContents: unknown[] = [];
+  const nav: unknown[] = [];
   if (page > 0) {
-    footerContents.push({
+    nav.push({
       type: 'button',
       style: 'link',
       height: 'sm',
       flex: 1,
-      action: {
-        type: 'message',
-        label: '前へ',
-        text: '前へ',
-      },
+      color: C.accent,
+      action: { type: 'message', label: '前へ', text: '前へ' },
     });
   }
   if (page < totalPages - 1) {
-    footerContents.push({
+    nav.push({
       type: 'button',
       style: 'link',
       height: 'sm',
       flex: 1,
-      action: {
-        type: 'message',
-        label: '次の機種へ',
-        text: '次の機種へ',
-      },
+      color: C.accent,
+      action: { type: 'message', label: '次の機種へ', text: '次の機種へ' },
     });
   }
-  if (!footerContents.length) {
-    footerContents.push({
+  if (!nav.length) {
+    nav.push({
       type: 'text',
       text: '機種名を直接入力しても選べます',
       size: 'xs',
-      color: '#64748B',
+      color: C.muted,
       align: 'center',
       flex: 1,
     });
@@ -296,45 +375,33 @@ export function machinePickerFlexMessage(params: {
     contents: {
       type: 'bubble',
       size: 'giga',
-      header: {
-        type: 'box',
-        layout: 'vertical',
-        backgroundColor: '#0F172A',
-        paddingAll: '16px',
-        contents: [
-          {
-            type: 'text',
-            text: '機種選択',
-            size: 'lg',
-            color: '#FFFFFF',
-            weight: 'bold',
-          },
-          {
-            type: 'text',
-            text: `全${total}台 ・ ${page + 1}/${totalPages}ページ`,
-            size: 'xs',
-            color: '#CBD5E1',
-            margin: 'xs',
-          },
-        ],
-      },
+      header: header('一覧', '機種を選ぶ', `全${total}台 ・ ${page + 1}/${totalPages}ページ`),
       body: {
         type: 'box',
         layout: 'vertical',
-        backgroundColor: '#FFFFFF',
-        paddingAll: '12px',
-        spacing: 'sm',
-        contents: bodyContents,
+        backgroundColor: C.surface,
+        paddingStart: '20px',
+        paddingEnd: '20px',
+        paddingBottom: '8px',
+        spacing: 'none',
+        contents,
       },
       footer: {
         type: 'box',
-        layout: 'horizontal',
-        backgroundColor: '#F8FAFC',
+        layout: 'vertical',
+        backgroundColor: C.canvas,
         paddingAll: '12px',
-        spacing: 'sm',
-        contents: footerContents,
+        contents: [
+          { type: 'separator', color: C.line, margin: 'none' },
+          {
+            type: 'box',
+            layout: 'horizontal',
+            margin: 'sm',
+            spacing: 'sm',
+            contents: nav,
+          },
+        ],
       },
     },
   };
 }
-
