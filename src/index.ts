@@ -51,9 +51,11 @@ async function handleEvent(event: LineEvent, env: Env): Promise<void> {
   } else if (event.type === 'postback') {
     await handlePostback(userId, event.postback?.data ?? '', replyToken, env);
   } else if (event.type === 'follow') {
+    const displayName = await getDisplayName(userId, env.LINE_CHANNEL_ACCESS_TOKEN);
+    const greeting = displayName ? `${displayName}さん、初めまして！` : '初めまして！';
     await reply(
       replyToken,
-      [await machineSelectMessage(userId, 0, env, true)],
+      [await machineSelectMessage(userId, 0, env, true, greeting)],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
   }
@@ -205,6 +207,19 @@ function findMachines(query: string): string[] {
   );
 }
 
+async function getDisplayName(userId: string, accessToken: string): Promise<string | undefined> {
+  try {
+    const res = await fetch(`https://api.line.me/v2/bot/profile/${userId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as { displayName?: string };
+    return data.displayName;
+  } catch {
+    return undefined;
+  }
+}
+
 function getLinks(md: string): { label: string; uri: string }[] {
   const body = getSection(md, 'SOURCES');
   if (!body) return [];
@@ -333,7 +348,13 @@ function orderedMachineIds(recent: string[]): string[] {
   return out;
 }
 
-async function machineSelectMessage(userId: string, page: number, env: Env, intro = false) {
+async function machineSelectMessage(
+  userId: string,
+  page: number,
+  env: Env,
+  intro = false,
+  greeting?: string,
+) {
   const recent = await getRecent(userId, env);
   const ids = orderedMachineIds(recent);
   const totalPages = Math.max(1, Math.ceil(ids.length / PAGE_SIZE));
@@ -343,5 +364,5 @@ async function machineSelectMessage(userId: string, page: number, env: Env, intr
     id,
     name: getMachineName(MACHINES[id]) || id,
   }));
-  return machinePickerFlexMessage({ page: p, totalPages, total: ids.length, items, recent, intro });
+  return machinePickerFlexMessage({ page: p, totalPages, total: ids.length, items, recent, intro, greeting });
 }
