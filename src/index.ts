@@ -1,4 +1,4 @@
-import { MACHINES } from './data';
+import { MACHINES, MACHINE_ORDER } from './data';
 import { getMachineName, getSection } from './machineLoader';
 import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
@@ -52,7 +52,7 @@ async function handleEvent(event: LineEvent, env: Env): Promise<void> {
   } else if (event.type === 'follow') {
     await reply(
       replyToken,
-      [{ type: 'text', text: 'ようこそ。まず機種を選んでください。' }],
+      [await machineSelectMessage(userId, 0, env)],
       env.LINE_CHANNEL_ACCESS_TOKEN,
     );
   }
@@ -72,6 +72,7 @@ async function handleText(
     const byName = name && (t.includes(name) || (t.length >= 2 && name.includes(t)));
     if (t === id || byName) {
       await env.MACHINE_STATE.put(userId, id);
+      await rememberMachine(userId, id, env);
       await reply(
         replyToken,
         [
@@ -88,11 +89,7 @@ async function handleText(
 
   const machineId = await env.MACHINE_STATE.get(userId);
   if (!machineId || !MACHINES[machineId]) {
-    await reply(
-      replyToken,
-      [{ type: 'text', text: '先に機種を選んでください。' }],
-      env.LINE_CHANNEL_ACCESS_TOKEN,
-    );
+    await reply(replyToken, [await machineSelectMessage(userId, 0, env)], env.LINE_CHANNEL_ACCESS_TOKEN);
     return;
   }
 
@@ -142,14 +139,16 @@ async function handlePostback(
   const params = new URLSearchParams(data);
   const machineId = params.get('machine');
   const action = params.get('action');
+  const page = Number(params.get('page') ?? '0') || 0;
 
   if (machineId && MACHINES[machineId]) {
     await env.MACHINE_STATE.put(userId, machineId);
+    await rememberMachine(userId, machineId, env);
   }
 
   // 機種選択ボタン（機種未指定）→ 機種一覧をクイックリプライで提示
   if (action === 'select' && !machineId) {
-    await reply(replyToken, [machineSelectMessage()], env.LINE_CHANNEL_ACCESS_TOKEN);
+    await reply(replyToken, [await machineSelectMessage(userId, page, env)], env.LINE_CHANNEL_ACCESS_TOKEN);
     return;
   }
 
@@ -161,11 +160,7 @@ async function handlePostback(
   const current =
     machineId && MACHINES[machineId] ? machineId : await env.MACHINE_STATE.get(userId);
   if (!current || !MACHINES[current]) {
-    await reply(
-      replyToken,
-      [{ type: 'text', text: '機種を選んでください。' }],
-      env.LINE_CHANNEL_ACCESS_TOKEN,
-    );
+    await reply(replyToken, [await machineSelectMessage(userId, 0, env)], env.LINE_CHANNEL_ACCESS_TOKEN);
     return;
   }
 
@@ -201,22 +196,78 @@ const HELP_TEXT = [
   '例:「380Gから打てる？」',
 ].join('\n');
 
-function machineSelectMessage() {
-  const items = Object.entries(MACHINES).map(([id, md]) => {
-    const name = getMachineName(md) || id;
-    return {
-      type: 'action' as const,
-      action: {
-        type: 'postback' as const,
-        label: name.slice(0, 20),
-        data: `machine=${id}&action=select`,
-        displayText: name,
-      },
-    };
-  });
+const PAGE_SIZE = 11;
+
+type QuickReplyItem = {
+  type: 'action';
+  action: { type: 'postback'; label: string; data: string; displayText: string };
+};
+
+async function getRecent(userId: string, env: Env): Promise<string[]> {
+  const raw = await env.MACHINE_STATE.get(`recent:${userId}`);
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+async function rememberMachine(userId: string, id: string, env: Env): Promise<void> {
+  const recent = await getRecent(userId, env);
+  const next = [id, ...recent.filter((x) => x !== id)].slice(0, 30);
+  await env.MACHINE_STATE.put(`recent:${userId}`, JSON.stringify(next));
+}
+
+function orderedMachineIds(recent: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const add = (id: string): void => {
+    if (MACHINES[id] && !seen.has(id)) {
+      seen.add(id);
+      out.push(id);
+    }
+  };
+  recent.forEach(add);
+  MACHINE_ORDER.forEach(add);
+  Object.keys(MACHINES).forEach(add);
+  return out;
+}
+
+async function machineSelectMessage(userId: string, page: number, env: Env) {
+  const ids = orderedMachineIds(await getRecent(userId, env));
+  const totalPages = Math.max(1, Math.ceil(ids.length / PAGE_SIZE));
+  const p = Math.min(Math.max(0, page), totalPages - 1);
+  const items: QuickReplyItem[] = ids
+    .slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE)
+    .map((id) => {
+      const name = getMachineName(MACHINES[id]) || id;
+      return {
+        type: 'action' as const,
+        action: {
+          type: 'postback' as const,
+          label: name.slice(0, 20),
+          data: `machine=${id}&action=select`,
+          displayText: name,
+        },
+      };
+    });
+  if (p > 0) {
+    items.push({
+      type: 'action',
+      action: { type: 'postback', label: '前へ', data: `action=select&page=${p - 1}`, displayText: '前へ' },
+    });
+  }
+  if (p < totalPages - 1) {
+    items.push({
+      type: 'action',
+      action: { type: 'postback', label: '次の機種へ', data: `action=select&page=${p + 1}`, displayText: '次の機種へ' },
+    });
+  }
   return {
     type: 'text' as const,
-    text: '機種を選んでください。',
-    quickReply: { items: items.slice(0, 13) },
+    text: `機種を選んでください（${p + 1}/${totalPages}）\n機種名を直接入力しても選べます。`,
+    quickReply: { items },
   };
 }
