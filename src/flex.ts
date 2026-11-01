@@ -107,29 +107,40 @@ export function aiFlexMessage(name: string, answer: string): LineMessage {
 
 export function sectionFlexMessage(name: string, label: string, body: string): LineMessage {
   const items = parseSectionItems(body);
-  const contents = items.map((item, i) => ({
-    type: 'box',
-    layout: 'vertical',
-    spacing: 'xs',
-    margin: i === 0 ? 'none' : 'lg',
-    contents: [
-      {
-        type: 'text',
-        text: item.label,
-        size: 'xs',
-        color: '#64748B',
-        weight: 'bold',
-        wrap: true,
-      },
-      {
-        type: 'text',
-        text: formatValue(item.value),
-        size: 'sm',
-        color: '#0F172A',
-        wrap: true,
-      },
-    ],
-  }));
+  const contents =
+    items.length > 0
+      ? items.map((item, i) => ({
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'xs',
+          margin: i === 0 ? 'none' : 'lg',
+          contents: [
+            {
+              type: 'text',
+              text: item.label,
+              size: 'xs',
+              color: '#64748B',
+              weight: 'bold',
+              wrap: true,
+            },
+            {
+              type: 'text',
+              text: formatValue(item.value),
+              size: 'sm',
+              color: '#0F172A',
+              wrap: true,
+            },
+          ],
+        }))
+      : [
+          {
+            type: 'text',
+            text: formatValue(body.replace(/^[-・]\s*/gm, '')),
+            size: 'sm',
+            color: '#0F172A',
+            wrap: true,
+          },
+        ];
 
   return {
     type: 'flex',

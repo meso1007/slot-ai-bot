@@ -1,4 +1,10 @@
-export type SectionKey = 'SPEC' | 'NORMAL' | 'AT_CZ' | 'AT_AFTER' | 'EXIT_SETTING';
+export type SectionKey =
+  | 'SUMMARY'
+  | 'SPEC'
+  | 'NORMAL'
+  | 'AT_CZ'
+  | 'AT_AFTER'
+  | 'EXIT_SETTING';
 
 export function getSection(md: string, section: SectionKey): string {
   const lines = md.split('\n');
