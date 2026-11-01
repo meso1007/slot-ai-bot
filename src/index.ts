@@ -2,7 +2,7 @@ import { MACHINES, MACHINE_ALIASES, MACHINE_ORDER } from './data';
 import { getMachineName, getSection, type SectionKey } from './machineLoader';
 import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
-import { aiFlexMessage, machinePickerFlexMessage, reviewFlexMessage, sectionFlexMessage } from './flex';
+import { aiFlexMessage, linksFlexMessage, machinePickerFlexMessage, reviewFlexMessage, sectionFlexMessage } from './flex';
 import { formatForLine, reply, showLoading, verifySignature } from './line';
 import { matchIds } from './search';
 import type { LineEvent, LineMessage } from './line';
@@ -205,18 +205,48 @@ function findMachines(query: string): string[] {
   );
 }
 
+function getLinks(md: string): { label: string; uri: string }[] {
+  const body = getSection(md, 'SOURCES');
+  if (!body) return [];
+  const links: { label: string; uri: string }[] = [];
+  for (const raw of body.split('\n')) {
+    const line = raw.replace(/^[-・]\s*/, '').trim();
+    const m = line.match(/(https?:\/\/\S+)/);
+    if (!m) continue;
+    const uri = m[1];
+    const label = line.replace(uri, '').trim();
+    links.push({
+      label: label.length > 60 ? `${label.slice(0, 60)}…` : label || uri,
+      uri,
+    });
+  }
+  return links;
+}
+
+function pickDetailLink(links: { label: string; uri: string }[]) {
+  const hit = links.find((l) =>
+    /設定判別|設定示唆|解析|天井|やめどき|ヤメ時|フロー/.test(l.label),
+  );
+  const link = hit ?? links[0];
+  return link ? { label: '設定示唆・フローを詳しく見る', uri: link.uri } : undefined;
+}
+
 function renderSectionMessage(
   md: string,
   name: string,
   section: SectionKey,
 ): LineMessage | null {
+  if (section === 'LINKS') {
+    return linksFlexMessage(name, getLinks(md));
+  }
+  const detail = pickDetailLink(getLinks(md));
   if (section === 'REVIEW') {
     const review = getSection(md, 'REVIEW');
     const summary = getSection(md, 'SUMMARY');
-    return review ? reviewFlexMessage(name, summary, review) : null;
+    return review ? reviewFlexMessage(name, summary, review, detail) : null;
   }
   const body = getSection(md, section);
-  return body ? sectionFlexMessage(name, SECTION_LABEL[section], body) : null;
+  return body ? sectionFlexMessage(name, SECTION_LABEL[section], body, detail) : null;
 }
 
 async function selectMachine(

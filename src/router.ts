@@ -19,7 +19,8 @@ const KEYWORD_MAP: { re: RegExp; section: SectionKey }[] = [
   { re: /(通常時|前兆|モード|周期|ゾーン|狙い目)/, section: 'NORMAL' },
   { re: /(チャンスゾーン|CZ|AT|上乗せ|特化)/i, section: 'AT_CZ' },
   { re: /(AT後|AT終了後|終了後|引き戻し|上位示唆|ツラヌキ)/, section: 'AT_AFTER' },
-  { re: /(ヤメ時|やめ時|やめどき|終了画面|設定判別)/, section: 'EXIT_SETTING' },
+  { re: /(ヤメ時|やめ時|やめどき|終了画面|設定判別|設定示唆|示唆)/, section: 'EXIT_SETTING' },
+  { re: /(リンク|出典|参考|詳しく|フロー|解析|サイト)/, section: 'LINKS' },
 ];
 
 export function routeText(text: string): RouteResult {
@@ -41,6 +42,8 @@ export const SECTION_LABEL: Record<SectionKey, string> = {
   AT_CZ: 'AT解説',
   AT_AFTER: 'AT後',
   EXIT_SETTING: 'ヤメ時',
+  LINKS: 'リンク',
+  SOURCES: '出典',
 };
 
 export const ACTION_SECTION: Record<string, SectionKey> = {

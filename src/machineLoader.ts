@@ -6,7 +6,9 @@ export type SectionKey =
   | 'NORMAL'
   | 'AT_CZ'
   | 'AT_AFTER'
-  | 'EXIT_SETTING';
+  | 'EXIT_SETTING'
+  | 'LINKS'
+  | 'SOURCES';
 
 export function getSection(md: string, section: SectionKey): string {
   const lines = md.split('\n');

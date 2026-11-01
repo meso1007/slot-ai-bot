@@ -159,39 +159,48 @@ function header(label: string, title: string, meta?: string, subtitle?: string) 
   };
 }
 
-function footer(hint: string) {
+function footer(hint: string, link?: { label: string; uri: string }) {
+  const contents: unknown[] = [{ type: 'separator', color: C.accentLine, margin: 'none' }];
+  if (link) {
+    contents.push({
+      type: 'button',
+      style: 'link',
+      height: 'sm',
+      margin: 'sm',
+      color: C.accent,
+      action: { type: 'uri', label: link.label.slice(0, 40), uri: link.uri },
+    });
+  }
+  contents.push({
+    type: 'box',
+    layout: 'horizontal',
+    margin: 'sm',
+    contents: [
+      {
+        type: 'text',
+        text: hint,
+        size: 'xs',
+        color: C.muted,
+        flex: 1,
+        wrap: true,
+      },
+      {
+        type: 'text',
+        text: 'SLOT AI',
+        size: 'xxs',
+        color: C.accentInk,
+        weight: 'bold',
+        align: 'end',
+        gravity: 'center',
+      },
+    ],
+  });
   return {
     type: 'box',
     layout: 'vertical',
     backgroundColor: C.canvas,
     paddingAll: '16px',
-    contents: [
-      { type: 'separator', color: C.accentLine, margin: 'none' },
-      {
-        type: 'box',
-        layout: 'horizontal',
-        margin: 'sm',
-        contents: [
-          {
-            type: 'text',
-            text: hint,
-            size: 'xs',
-            color: C.muted,
-            flex: 1,
-            wrap: true,
-          },
-          {
-            type: 'text',
-            text: 'SLOT AI',
-            size: 'xxs',
-            color: C.accentInk,
-            weight: 'bold',
-            align: 'end',
-            gravity: 'center',
-          },
-        ],
-      },
-    ],
+    contents,
   };
 }
 
@@ -271,7 +280,12 @@ export function aiFlexMessage(name: string, answer: string): LineMessage {
   };
 }
 
-export function sectionFlexMessage(name: string, label: string, body: string): LineMessage {
+export function sectionFlexMessage(
+  name: string,
+  label: string,
+  body: string,
+  link?: { label: string; uri: string },
+): LineMessage {
   const items = parseSectionItems(body);
   const contents: unknown[] = [];
 
@@ -349,7 +363,7 @@ export function sectionFlexMessage(name: string, label: string, body: string): L
         spacing: 'none',
         contents,
       },
-      footer: footer('下のメニューから他の項目も見られます'),
+      footer: footer('下のメニューから他の項目も見られます', link),
     },
   };
 }
@@ -358,6 +372,7 @@ export function reviewFlexMessage(
   name: string,
   summaryBody: string | undefined,
   reviewBody: string,
+  link?: { label: string; uri: string },
 ): LineMessage {
   const items = parseSectionItems(reviewBody);
   const rating = items.find((i) => i.label.includes('総合評価'));
@@ -559,7 +574,87 @@ export function reviewFlexMessage(
         spacing: 'none',
         contents,
       },
-      footer: footer('下のメニューから他の項目も見られます'),
+      footer: footer('下のメニューから他の項目も見られます', link),
+    },
+  };
+}
+
+export function linksFlexMessage(
+  name: string,
+  links: { label: string; uri: string }[],
+): LineMessage {
+  const contents: unknown[] = [
+    {
+      type: 'text',
+      text: '設定示唆・フロー図・解析は各サイトで確認できます。',
+      size: 'sm',
+      color: C.body,
+      wrap: true,
+    },
+    { type: 'separator', margin: 'lg', color: C.hairline },
+  ];
+  if (!links.length) {
+    contents.push({
+      type: 'text',
+      text: 'リンクが登録されていません。',
+      size: 'sm',
+      color: C.muted,
+      wrap: true,
+      margin: 'lg',
+    });
+  }
+  links.forEach((link, i) => {
+    contents.push({
+      type: 'box',
+      layout: 'horizontal',
+      paddingTop: '14px',
+      paddingBottom: '14px',
+      spacing: 'sm',
+      action: { type: 'uri', uri: link.uri },
+      contents: [
+        {
+          type: 'text',
+          text: link.label,
+          size: 'sm',
+          color: C.ink,
+          weight: 'bold',
+          wrap: true,
+          flex: 1,
+        },
+        {
+          type: 'text',
+          text: '↗',
+          size: 'sm',
+          color: C.accentInk,
+          flex: 0,
+          gravity: 'center',
+        },
+      ],
+    });
+    if (i < links.length - 1) {
+      contents.push({ type: 'separator', color: C.hairline });
+    }
+  });
+
+  return {
+    type: 'flex',
+    altText: `${name}｜リンク`,
+    contents: {
+      type: 'bubble',
+      size: 'giga',
+      header: header('リンク', name, 'LINKS'),
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: C.surface,
+        paddingTop: '18px',
+        paddingBottom: '20px',
+        paddingStart: '20px',
+        paddingEnd: '20px',
+        spacing: 'none',
+        contents,
+      },
+      footer: footer('出典元の最新情報もあわせて確認してください'),
     },
   };
 }
