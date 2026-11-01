@@ -2,7 +2,7 @@ import { MACHINES, MACHINE_ALIASES, MACHINE_ORDER } from './data';
 import { getMachineName, getSection } from './machineLoader';
 import { ACTION_SECTION, SECTION_LABEL, routeText } from './router';
 import { askDeepSeek, buildSystemPrompt } from './ai';
-import { aiFlexMessage, machinePickerFlexMessage, sectionFlexMessage } from './flex';
+import { aiFlexMessage, machinePickerFlexMessage, parseSectionItems, sectionFlexMessage } from './flex';
 import { formatForLine, reply, showLoading, verifySignature } from './line';
 import { matchIds } from './search';
 import type { LineEvent } from './line';
@@ -181,11 +181,7 @@ async function handlePostback(
     return;
   }
 
-  await reply(
-    replyToken,
-    [{ type: 'text', text: `${name} を選択しました。` }],
-    env.LINE_CHANNEL_ACCESS_TOKEN,
-  );
+  await selectMachine(userId, current, replyToken, env);
 }
 
 const HELP_TEXT = [
@@ -217,14 +213,25 @@ async function selectMachine(
 ): Promise<void> {
   await env.MACHINE_STATE.put(userId, id);
   await rememberMachine(userId, id, env);
-  const name = getMachineName(MACHINES[id]) || id;
+  const md = MACHINES[id];
+  const name = getMachineName(md) || id;
+
+  const review = getSection(md, 'REVIEW');
+  const summary = getSection(md, 'SUMMARY');
+  const gameplay = summary
+    ? parseSectionItems(summary).find((item) => item.label === 'ゲーム性')
+    : undefined;
+  const body = review && gameplay ? `- ゲーム性: ${gameplay.value}\n${review}` : review;
+
   await reply(
     replyToken,
     [
-      {
-        type: 'text',
-        text: `${name} を選択しました。\n「特徴」「評価」「スペック」「通常時」「AT解説」「AT後」「ヤメ時」または自由に質問してください。`,
-      },
+      body
+        ? sectionFlexMessage(name, SECTION_LABEL.REVIEW, body)
+        : {
+            type: 'text',
+            text: `${name} を選択しました。\n「特徴」「評価」「スペック」「通常時」「AT解説」「AT後」「ヤメ時」または自由に質問してください。`,
+          },
     ],
     env.LINE_CHANNEL_ACCESS_TOKEN,
   );
