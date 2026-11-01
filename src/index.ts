@@ -146,6 +146,17 @@ async function handlePostback(
     await env.MACHINE_STATE.put(userId, machineId);
   }
 
+  // 機種選択ボタン（機種未指定）→ 機種一覧をクイックリプライで提示
+  if (action === 'select' && !machineId) {
+    await reply(replyToken, [machineSelectMessage()], env.LINE_CHANNEL_ACCESS_TOKEN);
+    return;
+  }
+
+  if (action === 'help') {
+    await reply(replyToken, [{ type: 'text', text: HELP_TEXT }], env.LINE_CHANNEL_ACCESS_TOKEN);
+    return;
+  }
+
   const current =
     machineId && MACHINES[machineId] ? machineId : await env.MACHINE_STATE.get(userId);
   if (!current || !MACHINES[current]) {
@@ -176,4 +187,33 @@ async function handlePostback(
     [{ type: 'text', text: `${name} を選択しました。` }],
     env.LINE_CHANNEL_ACCESS_TOKEN,
   );
+}
+
+const HELP_TEXT = [
+  '【使い方】',
+  '下のメニューから操作できます。',
+  '・機種選択: 機種を切り替え',
+  '・スペック / 狙い目 / AT解説 / ヤメ時: 定型情報を表示',
+  '・自由質問: そのままメッセージを送信',
+  '例:「380Gから打てる？」',
+].join('\n');
+
+function machineSelectMessage() {
+  const items = Object.entries(MACHINES).map(([id, md]) => {
+    const name = getMachineName(md) || id;
+    return {
+      type: 'action' as const,
+      action: {
+        type: 'postback' as const,
+        label: name.slice(0, 20),
+        data: `machine=${id}&action=select`,
+        displayText: name,
+      },
+    };
+  });
+  return {
+    type: 'text' as const,
+    text: '機種を選んでください。',
+    quickReply: { items: items.slice(0, 13) },
+  };
 }

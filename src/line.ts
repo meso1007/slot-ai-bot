@@ -6,7 +6,7 @@ export interface LineEvent {
   postback?: { data: string };
 }
 
-export type LineMessage = { type: 'text'; text: string };
+export type LineMessage = { type: 'text'; text: string; quickReply?: unknown };
 
 export async function verifySignature(
   body: string,
